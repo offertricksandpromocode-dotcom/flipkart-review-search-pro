@@ -4,7 +4,7 @@
  */
 
 class LicenseEngine {
-  static DEFAULT_BACKEND_URL = 'http://localhost:5000';
+  static DEFAULT_BACKEND_URL = 'https://flipkart-review-search-pro.onrender.com';
   static SECRET_SALT = 'FLIPKART_SEARCH_PRO_V1_2026_SECRET';
 
   /**
