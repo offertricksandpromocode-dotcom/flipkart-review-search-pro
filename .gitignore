@@ -10,7 +10,8 @@ server/.env
 *.html
 !popup/popup.html
 !admin/admin.html
-!server/public/index.html
+!server/public/*.html
+!server/public/**/*.html
 script_*.js
 *.json
 !manifest.json

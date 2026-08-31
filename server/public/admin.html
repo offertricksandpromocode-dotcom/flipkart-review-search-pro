@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flipkart Review Search - Backend Admin Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- Login Screen -->
+  <div id="loginScreen" class="auth-screen">
+    <div class="auth-card">
+      <div class="auth-header">
+        <div class="auth-icon">🔐</div>
+        <h2>Admin Portal</h2>
+        <p>Backend Membership & License Management System</p>
+      </div>
+      <form id="loginForm" class="auth-form">
+        <div class="form-group">
+          <label for="adminPassword">Admin Master Password:</label>
+          <input type="password" id="adminPassword" placeholder="Enter Admin Password" required autofocus />
+        </div>
+        <div id="loginError" class="alert-error hidden">Invalid password</div>
+        <button type="submit" id="btnLoginSubmit" class="btn-submit">Unlock Admin Panel →</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Main Dashboard App -->
+  <div id="adminApp" class="app-layout hidden">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <div class="brand-icon">⚡</div>
+        <div class="brand-info">
+          <h3>FK Search Pro</h3>
+          <span>Admin Portal</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <button class="nav-item active" data-view="dashboardView">
+          <span class="icon">📊</span>
+          <span>Overview</span>
+        </button>
+        <button class="nav-item" data-view="generatorView">
+          <span class="icon">✨</span>
+          <span>Generate Key</span>
+        </button>
+        <button class="nav-item" data-view="keysView">
+          <span class="icon">🔑</span>
+          <span>All License Keys</span>
+        </button>
+        <button class="nav-item" data-view="activityView">
+          <span class="icon">📜</span>
+          <span>Audit Logs</span>
+        </button>
+        <button class="nav-item" data-view="settingsView">
+          <span class="icon">🛡️</span>
+          <span>Security</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button id="btnLogout" class="btn-logout">
+          <span>🚪 Logout</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Viewport -->
+    <main class="main-content">
+      <!-- Top Bar -->
+      <header class="topbar">
+        <div class="topbar-title">
+          <h2 id="viewHeading">Dashboard Overview</h2>
+          <p id="viewSubheading">Manage licenses, memberships, and client activations</p>
+        </div>
+        <div class="topbar-actions">
+          <div class="server-status-pill">
+            <span class="status-dot"></span>
+            <span>Server Online</span>
+          </div>
+          <button id="btnQuickNewKey" class="btn-primary-pill">+ New Key</button>
+        </div>
+      </header>
+
+      <!-- VIEW 1: Dashboard Overview -->
+      <section id="dashboardView" class="view-pane active">
+        <!-- Stat Metric Cards -->
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <div class="metric-icon blue">🔑</div>
+            <div class="metric-details">
+              <span class="metric-label">Total Issued Keys</span>
+              <strong id="statTotalKeys" class="metric-value">0</strong>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-icon green">✅</div>
+            <div class="metric-details">
+              <span class="metric-label">Active Memberships</span>
+              <strong id="statActiveKeys" class="metric-value">0</strong>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-icon purple">💻</div>
+            <div class="metric-details">
+              <span class="metric-label">Activated Devices</span>
+              <strong id="statDevices" class="metric-value">0</strong>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-icon red">⚠️</div>
+            <div class="metric-details">
+              <span class="metric-label">Expired / Revoked</span>
+              <strong id="statExpiredKeys" class="metric-value">0</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Keys Table Preview -->
+        <div class="panel-card">
+          <div class="panel-header">
+            <h3>Recent License Keys</h3>
+            <button class="btn-link" id="btnViewAllKeys">View All Keys →</button>
+          </div>
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>License Key</th>
+                  <th>Client Name</th>
+                  <th>Plan Type</th>
+                  <th>Duration</th>
+                  <th>Status</th>
+                  <th>Devices</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="recentKeysTableBody">
+                <!-- Injected via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 2: Generate Key -->
+      <section id="generatorView" class="view-pane">
+        <div class="panel-card max-600">
+          <div class="panel-header">
+            <h3>Generate License Key</h3>
+            <p>Select duration, plan type, and optional client details.</p>
+          </div>
+
+          <form id="keyGeneratorForm" class="styled-form">
+            <div class="form-group">
+              <label for="genPlanSelect">Membership Duration / Plan:</label>
+              <select id="genPlanSelect" class="form-select">
+                <option value="MONTHLY" selected>📅 Monthly Plan (30 Days)</option>
+                <option value="YEARLY">⭐ Yearly Plan (365 Days)</option>
+                <option value="CUSTOM">⏳ Custom Days (Enter below)</option>
+                <option value="LIFETIME">👑 Lifetime Access (Permanent)</option>
+              </select>
+            </div>
+
+            <div id="genCustomDaysGroup" class="form-group hidden">
+              <label for="genCustomDays">Custom Number of Days:</label>
+              <input type="number" id="genCustomDays" min="1" max="3650" value="15" placeholder="e.g. 7, 14, 45, 60, 90" />
+            </div>
+
+            <div class="form-group">
+              <label for="genClientName">Client / Organization Name (Optional):</label>
+              <input type="text" id="genClientName" placeholder="e.g. John Doe, Agency X, Client #12" />
+            </div>
+
+            <div class="form-group">
+              <label for="genMaxDevices">Max Allowed Devices / Chrome Browsers:</label>
+              <input type="number" id="genMaxDevices" min="1" max="10" value="1" />
+            </div>
+
+            <button type="submit" id="btnGenerateSubmit" class="btn-primary-block">✨ Generate License Key</button>
+          </form>
+
+          <!-- Generated Result Banner -->
+          <div id="generatedBanner" class="generated-banner hidden">
+            <span class="banner-title">🎉 License Key Created Successfully!</span>
+            <div class="key-box">
+              <code id="newGeneratedKeyCode">FKPRO-30D-XXXX-YYYY</code>
+              <button id="btnCopyGeneratedKey" class="btn-copy-sm">Copy Key</button>
+            </div>
+            <p id="newGeneratedKeyDetails">Valid for 30 Days • Monthly Plan</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 3: All Keys Management -->
+      <section id="keysView" class="view-pane">
+        <div class="panel-card">
+          <div class="panel-header-toolbar">
+            <div class="search-input-wrapper">
+              <input type="text" id="keysSearchInput" placeholder="Search by Key, Client name, or Status..." />
+            </div>
+            <div class="filter-group">
+              <select id="statusFilterSelect" class="form-select-sm">
+                <option value="ALL">All Statuses</option>
+                <option value="ACTIVE">Active Only</option>
+                <option value="EXPIRED">Expired</option>
+                <option value="REVOKED">Revoked</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>License Key</th>
+                  <th>Client</th>
+                  <th>Plan</th>
+                  <th>Days Left</th>
+                  <th>Expiry Date</th>
+                  <th>Status</th>
+                  <th>Devices</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="allKeysTableBody">
+                <!-- Injected via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 4: Audit Logs -->
+      <section id="activityView" class="view-pane">
+        <div class="panel-card">
+          <div class="panel-header">
+            <h3>System Activity & Audit Logs</h3>
+            <p>Record of key generation, activations, extensions, and administrative changes.</p>
+          </div>
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Action</th>
+                  <th>Details</th>
+                </tr>
+              </thead>
+              <tbody id="activityLogsTableBody">
+                <!-- Injected via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 5: Security Settings -->
+      <section id="settingsView" class="view-pane">
+        <div class="panel-card max-500">
+          <div class="panel-header">
+            <h3>Admin Security Settings</h3>
+            <p>Update your master admin password.</p>
+          </div>
+
+          <form id="changePasswordForm" class="styled-form">
+            <div class="form-group">
+              <label for="oldPasswordInput">Current Password:</label>
+              <input type="password" id="oldPasswordInput" required />
+            </div>
+            <div class="form-group">
+              <label for="newPasswordInput">New Password:</label>
+              <input type="password" id="newPasswordInput" placeholder="Minimum 4 characters" required />
+            </div>
+            <div id="passwordAlert" class="alert-text hidden"></div>
+            <button type="submit" class="btn-primary-block">Update Admin Password</button>
+          </form>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Extend Days Modal -->
+  <div id="extendModal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Extend Membership Duration</h3>
+        <button id="btnCloseExtendModal" class="btn-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p>Enter additional days to add to this license key:</p>
+        <input type="hidden" id="extendTargetKeyId" />
+        <div class="form-group">
+          <label for="extraDaysInput">Additional Days:</label>
+          <input type="number" id="extraDaysInput" min="1" max="1000" value="30" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="btnConfirmExtend" class="btn-primary-block">Add Days & Activate</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast hidden">Toast message</div>
+
+  <script src="app.js"></script>
+</body>
+</html>
