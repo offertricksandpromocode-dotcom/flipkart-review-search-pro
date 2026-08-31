@@ -3,313 +3,225 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Flipkart Review Search - Backend Admin Dashboard</title>
-  <link rel="stylesheet" href="style.css">
+  <title>Flipkart Review Search Pro - Web App</title>
+  <link rel="stylesheet" href="web_app.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
-  <!-- Login Screen -->
-  <div id="loginScreen" class="auth-screen">
-    <div class="auth-card">
-      <div class="auth-header">
-        <div class="auth-icon">🔐</div>
-        <h2>Admin Portal</h2>
-        <p>Backend Membership & License Management System</p>
-      </div>
-      <form id="loginForm" class="auth-form">
-        <div class="form-group">
-          <label for="adminPassword">Admin Master Password:</label>
-          <input type="password" id="adminPassword" placeholder="Enter Admin Password" required autofocus />
-        </div>
-        <div id="loginError" class="alert-error hidden">Invalid password</div>
-        <button type="submit" id="btnLoginSubmit" class="btn-submit">Unlock Admin Panel →</button>
-      </form>
-    </div>
-  </div>
-
-  <!-- Main Dashboard App -->
-  <div id="adminApp" class="app-layout hidden">
-    <!-- Sidebar -->
-    <aside class="sidebar">
-      <div class="sidebar-brand">
-        <div class="brand-icon">⚡</div>
-        <div class="brand-info">
-          <h3>FK Search Pro</h3>
-          <span>Admin Portal</span>
+  <div class="web-wrapper">
+    <!-- Navbar -->
+    <header class="navbar">
+      <div class="nav-brand">
+        <div class="logo-box">⚡</div>
+        <div class="brand-titles">
+          <h2>Flipkart Review Search Pro</h2>
+          <span>Search Reviews by Name & Location Online</span>
         </div>
       </div>
-
-      <nav class="sidebar-nav">
-        <button class="nav-item active" data-view="dashboardView">
-          <span class="icon">📊</span>
-          <span>Overview</span>
-        </button>
-        <button class="nav-item" data-view="generatorView">
-          <span class="icon">✨</span>
-          <span>Generate Key</span>
-        </button>
-        <button class="nav-item" data-view="keysView">
-          <span class="icon">🔑</span>
-          <span>All License Keys</span>
-        </button>
-        <button class="nav-item" data-view="activityView">
-          <span class="icon">📜</span>
-          <span>Audit Logs</span>
-        </button>
-        <button class="nav-item" data-view="settingsView">
-          <span class="icon">🛡️</span>
-          <span>Security</span>
-        </button>
-      </nav>
-
-      <div class="sidebar-footer">
-        <button id="btnLogout" class="btn-logout">
-          <span>🚪 Logout</span>
-        </button>
+      <div class="nav-right">
+        <div id="userMembershipStatus" class="membership-pill inactive">
+          <span>⚠️ Key Required</span>
+        </div>
+        <button id="btnOpenKeyModal" class="btn-primary-sm">🔑 Enter Key</button>
+        <a href="https://t.me/mahabirgope7" target="_blank" class="btn-tg-sm" title="Contact on Telegram">
+          💬 Buy Membership
+        </a>
       </div>
-    </aside>
+    </header>
 
-    <!-- Main Viewport -->
-    <main class="main-content">
-      <!-- Top Bar -->
-      <header class="topbar">
-        <div class="topbar-title">
-          <h2 id="viewHeading">Dashboard Overview</h2>
-          <p id="viewSubheading">Manage licenses, memberships, and client activations</p>
+    <!-- Main Container -->
+    <main class="main-container">
+      <div class="content-grid">
+        <!-- Left Column: Search Inputs & Controls -->
+        <div class="controls-column">
+          <!-- 1. Flipkart Link -->
+          <div class="card">
+            <label class="card-label" for="webProductUrl">
+              <span>Flipkart Product Link</span>
+            </label>
+            <input 
+              type="url" 
+              id="webProductUrl" 
+              placeholder="Paste any Flipkart product link (e.g. https://www.flipkart.com/...)"
+              autocomplete="off"
+            />
+            <div id="webProductBanner" class="product-banner hidden">
+              <span>📦</span>
+              <strong id="webProductTitleText">Detected Product</strong>
+            </div>
+          </div>
+
+          <!-- 2. Search Queries: Name & Location -->
+          <div class="card">
+            <div class="label-split">
+              <label class="card-label" for="webNamesInput">Reviewer Name(s)</label>
+              <span id="webNameBadge" class="count-badge">0 names</span>
+            </div>
+            <textarea 
+              id="webNamesInput" 
+              rows="2" 
+              placeholder="e.g. Riya Paul, Ashwani Kumar (or leave blank if searching only by Area)"
+            ></textarea>
+
+            <div class="label-split mt-3">
+              <label class="card-label" for="webLocationInput">📍 Area / City / Location</label>
+              <span id="webLocBadge" class="count-badge">Optional</span>
+            </div>
+            <input 
+              type="text" 
+              id="webLocationInput" 
+              placeholder="e.g. Jamshedpur, New Delhi, Kolkata, Mumbai..."
+            />
+
+            <div class="chips-row">
+              <span class="chips-label">Quick samples:</span>
+              <button type="button" class="sample-chip" data-name="Riya Paul">Riya Paul</button>
+              <button type="button" class="sample-chip" data-loc="Jamshedpur">📍 Jamshedpur</button>
+              <button type="button" class="sample-chip" data-name="Riya Paul" data-loc="Jamshedpur">Riya + Jamshedpur</button>
+            </div>
+          </div>
+
+          <!-- 3. Filters & Settings -->
+          <div class="card">
+            <div class="settings-row">
+              <div class="setting-col">
+                <label class="card-label" for="webScopeSelect">Search Scope</label>
+                <select id="webScopeSelect" class="form-select">
+                  <option value="ALL_SECTIONS" selected>🌐 ALL Sections (Recent + Helpful + Positive + Negative)</option>
+                  <option value="MOST_RECENT">🕒 Latest / Recent Posts Only</option>
+                  <option value="MOST_HELPFUL">👍 Most Helpful Only</option>
+                  <option value="POSITIVE_FIRST">⭐ Positive Reviews Only</option>
+                  <option value="NEGATIVE_FIRST">⚠️ Negative Reviews Only</option>
+                </select>
+              </div>
+
+              <div class="setting-col">
+                <label class="card-label" for="webMaxPages">Scan Depth</label>
+                <select id="webMaxPages" class="form-select">
+                  <option value="10">10 pages / section</option>
+                  <option value="25" selected>25 pages / section (~250 revs)</option>
+                  <option value="50">50 pages / section (~500 revs)</option>
+                  <option value="100">100 pages / section (~1000 revs)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="mt-3">
+              <div class="label-split">
+                <label class="card-label">Sensitivity (Fuzzy Match)</label>
+                <span id="webThresholdVal" class="threshold-tag">75%</span>
+              </div>
+              <input type="range" id="webThresholdSlider" min="50" max="95" value="75" step="5" class="slider-full" />
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="action-buttons-row">
+            <button id="btnWebSearch" class="btn-main-search">
+              <span>🔍 Search Reviews</span>
+            </button>
+            <button id="btnWebDelete" class="btn-delete-data" title="Clear all inputs and results">
+              🗑️ Clear
+            </button>
+          </div>
+
+          <!-- Progress -->
+          <div id="webProgressBox" class="progress-box hidden">
+            <div class="progress-labels">
+              <span id="webProgressText">Scanning Flipkart reviews...</span>
+            </div>
+            <div class="progress-bar-bg">
+              <div id="webProgressBarFill" class="progress-bar-active"></div>
+            </div>
+          </div>
+
+          <div id="webAlert" class="alert-box hidden"></div>
         </div>
-        <div class="topbar-actions">
-          <div class="server-status-pill">
-            <span class="status-dot"></span>
-            <span>Server Online</span>
-          </div>
-          <button id="btnQuickNewKey" class="btn-primary-pill">+ New Key</button>
-        </div>
-      </header>
 
-      <!-- VIEW 1: Dashboard Overview -->
-      <section id="dashboardView" class="view-pane active">
-        <!-- Stat Metric Cards -->
-        <div class="metrics-grid">
-          <div class="metric-card">
-            <div class="metric-icon blue">🔑</div>
-            <div class="metric-details">
-              <span class="metric-label">Total Issued Keys</span>
-              <strong id="statTotalKeys" class="metric-value">0</strong>
+        <!-- Right Column: Results & Availability -->
+        <div class="results-column">
+          <!-- Availability Matrix -->
+          <div id="webAvailabilityCard" class="card hidden">
+            <div class="panel-header-clean">
+              <h3>Availability Matrix</h3>
+              <span id="webTotalFoundPill" class="found-pill">0 Found</span>
             </div>
-          </div>
-          <div class="metric-card">
-            <div class="metric-icon green">✅</div>
-            <div class="metric-details">
-              <span class="metric-label">Active Memberships</span>
-              <strong id="statActiveKeys" class="metric-value">0</strong>
-            </div>
-          </div>
-          <div class="metric-card">
-            <div class="metric-icon purple">💻</div>
-            <div class="metric-details">
-              <span class="metric-label">Activated Devices</span>
-              <strong id="statDevices" class="metric-value">0</strong>
-            </div>
-          </div>
-          <div class="metric-card">
-            <div class="metric-icon red">⚠️</div>
-            <div class="metric-details">
-              <span class="metric-label">Expired / Revoked</span>
-              <strong id="statExpiredKeys" class="metric-value">0</strong>
-            </div>
-          </div>
-        </div>
-
-        <!-- Recent Keys Table Preview -->
-        <div class="panel-card">
-          <div class="panel-header">
-            <h3>Recent License Keys</h3>
-            <button class="btn-link" id="btnViewAllKeys">View All Keys →</button>
-          </div>
-          <div class="table-responsive">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>License Key</th>
-                  <th>Client Name</th>
-                  <th>Plan Type</th>
-                  <th>Duration</th>
-                  <th>Status</th>
-                  <th>Devices</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody id="recentKeysTableBody">
-                <!-- Injected via JS -->
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <!-- VIEW 2: Generate Key -->
-      <section id="generatorView" class="view-pane">
-        <div class="panel-card max-600">
-          <div class="panel-header">
-            <h3>Generate License Key</h3>
-            <p>Select duration, plan type, and optional client details.</p>
-          </div>
-
-          <form id="keyGeneratorForm" class="styled-form">
-            <div class="form-group">
-              <label for="genPlanSelect">Membership Duration / Plan:</label>
-              <select id="genPlanSelect" class="form-select">
-                <option value="MONTHLY" selected>📅 Monthly Plan (30 Days)</option>
-                <option value="YEARLY">⭐ Yearly Plan (365 Days)</option>
-                <option value="CUSTOM">⏳ Custom Days (Enter below)</option>
-                <option value="LIFETIME">👑 Lifetime Access (Permanent)</option>
-              </select>
-            </div>
-
-            <div id="genCustomDaysGroup" class="form-group hidden">
-              <label for="genCustomDays">Custom Number of Days:</label>
-              <input type="number" id="genCustomDays" min="1" max="3650" value="15" placeholder="e.g. 7, 14, 45, 60, 90" />
-            </div>
-
-            <div class="form-group">
-              <label for="genClientName">Client / Organization Name (Optional):</label>
-              <input type="text" id="genClientName" placeholder="e.g. John Doe, Agency X, Client #12" />
-            </div>
-
-            <div class="form-group">
-              <label for="genMaxDevices">Max Allowed Devices / Chrome Browsers:</label>
-              <input type="number" id="genMaxDevices" min="1" max="10" value="1" />
-            </div>
-
-            <button type="submit" id="btnGenerateSubmit" class="btn-primary-block">✨ Generate License Key</button>
-          </form>
-
-          <!-- Generated Result Banner -->
-          <div id="generatedBanner" class="generated-banner hidden">
-            <span class="banner-title">🎉 License Key Created Successfully!</span>
-            <div class="key-box">
-              <code id="newGeneratedKeyCode">FKPRO-30D-XXXX-YYYY</code>
-              <button id="btnCopyGeneratedKey" class="btn-copy-sm">Copy Key</button>
-            </div>
-            <p id="newGeneratedKeyDetails">Valid for 30 Days • Monthly Plan</p>
-          </div>
-        </div>
-      </section>
-
-      <!-- VIEW 3: All Keys Management -->
-      <section id="keysView" class="view-pane">
-        <div class="panel-card">
-          <div class="panel-header-toolbar">
-            <div class="search-input-wrapper">
-              <input type="text" id="keysSearchInput" placeholder="Search by Key, Client name, or Status..." />
-            </div>
-            <div class="filter-group">
-              <select id="statusFilterSelect" class="form-select-sm">
-                <option value="ALL">All Statuses</option>
-                <option value="ACTIVE">Active Only</option>
-                <option value="EXPIRED">Expired</option>
-                <option value="REVOKED">Revoked</option>
-              </select>
+            <div id="webAvailabilityList" class="avail-list">
+              <!-- Injected via JS -->
             </div>
           </div>
 
-          <div class="table-responsive">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>License Key</th>
-                  <th>Client</th>
-                  <th>Plan</th>
-                  <th>Days Left</th>
-                  <th>Expiry Date</th>
-                  <th>Status</th>
-                  <th>Devices</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody id="allKeysTableBody">
-                <!-- Injected via JS -->
-              </tbody>
-            </table>
+          <!-- Toolbar -->
+          <div id="webResultsToolbar" class="results-toolbar hidden">
+            <h3>Matching Reviews (<span id="webMatchCount">0</span>)</h3>
+            <div class="export-group">
+              <button id="btnWebCsv" class="btn-export-sm">CSV</button>
+              <button id="btnWebJson" class="btn-export-sm">JSON</button>
+              <button id="btnWebCopyLinks" class="btn-export-sm">Copy Links</button>
+            </div>
+          </div>
+
+          <!-- Reviews List -->
+          <div id="webReviewsList" class="reviews-list-container">
+            <!-- Review Cards Injected via JS -->
+          </div>
+
+          <!-- Placeholder Empty State -->
+          <div id="webEmptyState" class="empty-card">
+            <div class="empty-emoji">🔍</div>
+            <h3>Ready to Search Flipkart Reviews</h3>
+            <p>Paste any Flipkart product link, enter reviewer name or area (e.g. <strong>Jamshedpur</strong>), and click <strong>Search Reviews</strong>.</p>
+            <div class="empty-subnote">💡 Works directly on Desktop, iPhone, and Android without needing any browser extensions!</div>
           </div>
         </div>
-      </section>
-
-      <!-- VIEW 4: Audit Logs -->
-      <section id="activityView" class="view-pane">
-        <div class="panel-card">
-          <div class="panel-header">
-            <h3>System Activity & Audit Logs</h3>
-            <p>Record of key generation, activations, extensions, and administrative changes.</p>
-          </div>
-          <div class="table-responsive">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Timestamp</th>
-                  <th>Action</th>
-                  <th>Details</th>
-                </tr>
-              </thead>
-              <tbody id="activityLogsTableBody">
-                <!-- Injected via JS -->
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <!-- VIEW 5: Security Settings -->
-      <section id="settingsView" class="view-pane">
-        <div class="panel-card max-500">
-          <div class="panel-header">
-            <h3>Admin Security Settings</h3>
-            <p>Update your master admin password.</p>
-          </div>
-
-          <form id="changePasswordForm" class="styled-form">
-            <div class="form-group">
-              <label for="oldPasswordInput">Current Password:</label>
-              <input type="password" id="oldPasswordInput" required />
-            </div>
-            <div class="form-group">
-              <label for="newPasswordInput">New Password:</label>
-              <input type="password" id="newPasswordInput" placeholder="Minimum 4 characters" required />
-            </div>
-            <div id="passwordAlert" class="alert-text hidden"></div>
-            <button type="submit" class="btn-primary-block">Update Admin Password</button>
-          </form>
-        </div>
-      </section>
+      </div>
     </main>
-  </div>
 
-  <!-- Extend Days Modal -->
-  <div id="extendModal" class="modal-overlay hidden">
-    <div class="modal-card">
-      <div class="modal-header">
-        <h3>Extend Membership Duration</h3>
-        <button id="btnCloseExtendModal" class="btn-close">&times;</button>
-      </div>
-      <div class="modal-body">
-        <p>Enter additional days to add to this license key:</p>
-        <input type="hidden" id="extendTargetKeyId" />
-        <div class="form-group">
-          <label for="extraDaysInput">Additional Days:</label>
-          <input type="number" id="extraDaysInput" min="1" max="1000" value="30" />
+    <!-- Footer -->
+    <footer class="app-footer">
+      <div class="footer-inner">
+        <span>Flipkart Review Search Pro • Cloud Edition</span>
+        <div class="footer-links">
+          <span>Support & Membership Buy:</span>
+          <a href="https://t.me/mahabirgope7" target="_blank" class="tg-footer-link">
+            💬 @mahabirgope7 on Telegram
+          </a>
         </div>
       </div>
-      <div class="modal-footer">
-        <button id="btnConfirmExtend" class="btn-primary-block">Add Days & Activate</button>
+    </footer>
+
+    <!-- License Key Entry Modal -->
+    <div id="webKeyModal" class="modal-overlay hidden">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3>🔑 Enter Membership License Key</h3>
+          <button id="btnCloseKeyModal" class="btn-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p>Enter your Membership Key to unlock unlimited review searches across all sections.</p>
+          <div class="form-group">
+            <label for="webKeyInput">License Key:</label>
+            <input type="text" id="webKeyInput" placeholder="e.g. FKPRO-30D-XXXX-YYYY" />
+          </div>
+          <div id="webKeyModalAlert" class="alert-text hidden"></div>
+
+          <div class="modal-contact-box">
+            <strong>Don't have a membership key?</strong>
+            <p>Buy Monthly (30d), Yearly (365d), Custom Days, or Lifetime access instantly:</p>
+            <a href="https://t.me/mahabirgope7" target="_blank" class="btn-tg-contact-block">
+              💬 Buy on Telegram @mahabirgope7 ↗
+            </a>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="btnSubmitWebKey" class="btn-primary-block">Activate & Save Key</button>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Toast -->
-  <div id="toast" class="toast hidden">Toast message</div>
-
-  <script src="app.js"></script>
+  <script src="web_app.js"></script>
 </body>
 </html>

@@ -20,6 +20,7 @@ if (fs.existsSync(envPath)) {
 }
 
 const db = require('./database.js');
+const ServerScraper = require('./server_scraper.js');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -41,8 +42,61 @@ function authMiddleware(req, res, next) {
 }
 
 // -------------------------------------------------------------
-// CLIENT API ENDPOINTS (Called by Chrome Extension)
+// CLIENT WEB & EXTENSION API ENDPOINTS
 // -------------------------------------------------------------
+
+/**
+ * Live Web Search Scraper Endpoint
+ */
+app.post('/api/search/scrape', async (req, res) => {
+  const {
+    licenseKey,
+    productUrl,
+    queryNames = [],
+    queryLocations = [],
+    exactOnly = false,
+    threshold = 0.75,
+    maxPagesPerSection = 25,
+    searchScope = 'ALL_SECTIONS'
+  } = req.body;
+
+  // 1. Verify License Key
+  if (!licenseKey) {
+    return res.status(401).json({ error: 'Membership License Key is required to search. Contact @mahabirgope7 on Telegram to buy.' });
+  }
+
+  const licCheck = db.verifyLicense({ key: licenseKey });
+  if (!licCheck.isValid) {
+    return res.status(403).json({ error: licCheck.error || 'Invalid or expired License Key.' });
+  }
+
+  // 2. Validate URL
+  const norm = ServerScraper.normalizeReviewUrl(productUrl);
+  if (!norm.isValid) {
+    return res.status(400).json({ error: norm.error || 'Invalid Flipkart Product URL.' });
+  }
+
+  try {
+    const results = await ServerScraper.searchReviews({
+      reviewUrl: norm.reviewUrl,
+      queryNames,
+      queryLocations,
+      exactOnly,
+      threshold,
+      maxPagesPerSection: Math.min(maxPagesPerSection, 100),
+      searchScope
+    });
+
+    return res.json({
+      success: true,
+      productTitle: norm.productTitle,
+      ...results
+    });
+  } catch (err) {
+    console.error('Scraper error:', err.message);
+    return res.status(500).json({ error: 'Failed to fetch reviews: ' + err.message });
+  }
+});
 
 /**
  * Activate a license key from the Chrome extension
@@ -157,7 +211,17 @@ app.post('/api/admin/change-password', authMiddleware, (req, res) => {
   res.json(result);
 });
 
-// Fallback to Admin SPA
+// Admin Web Portal Route
+app.get('/admin', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+});
+
+// Web Search App Home Route
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// Fallback to Web App
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
