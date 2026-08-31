@@ -211,18 +211,21 @@ app.post('/api/admin/change-password', authMiddleware, (req, res) => {
   res.json(result);
 });
 
-// Admin Web Portal Route
-app.get('/admin', (req, res) => {
+// Admin Web Portal Routes
+app.get(['/admin', '/admin/', '/admin.html'], (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
 
-// Web Search App Home Route
-app.get('/', (req, res) => {
+// Web Search App Routes
+app.get(['/', '/search', '/app'], (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Fallback to Web App
+// Fallback to Web App (except /admin)
 app.get('*', (req, res) => {
+  if (req.path.startsWith('/admin')) {
+    return res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+  }
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
