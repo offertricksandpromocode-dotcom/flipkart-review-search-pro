@@ -144,6 +144,12 @@ body {
   font-weight: 600;
 }
 
+.notice-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .btn-redeem-sm {
   background: #ff9800;
   color: white;
@@ -153,6 +159,128 @@ body {
   font-weight: 700;
   border-radius: 4px;
   cursor: pointer;
+}
+
+.btn-buy-sm {
+  background: #2aabee;
+  color: white;
+  text-decoration: none;
+  padding: 2px 8px;
+  font-size: 10.5px;
+  font-weight: 700;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  transition: background 0.15s ease;
+}
+
+.btn-buy-sm:hover {
+  background: #229ed9;
+}
+
+/* App Footer Contact Bar */
+.app-footer {
+  background: #ffffff;
+  border-top: 1px solid var(--border-color);
+  padding: 8px 14px;
+  margin-top: auto;
+}
+
+.footer-contact-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+}
+
+.support-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-muted);
+}
+
+.support-badge {
+  background: #f1f5f9;
+  color: var(--text-main);
+  font-size: 9.5px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.telegram-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #e0f2fe;
+  color: #0284c7;
+  padding: 3px 8px;
+  border-radius: 12px;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 11px;
+  transition: all 0.15s ease;
+}
+
+.telegram-link:hover {
+  background: #0284c7;
+  color: #ffffff;
+}
+
+/* Modal Contact Card */
+.modal-contact-card {
+  margin-top: 8px;
+  padding: 10px 12px;
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  border-radius: var(--radius-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.modal-contact-card .contact-header {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.modal-contact-card .tg-icon {
+  font-size: 16px;
+}
+
+.modal-contact-card strong {
+  font-size: 11.5px;
+  color: #0369a1;
+  display: block;
+}
+
+.modal-contact-card p {
+  font-size: 10.5px;
+  color: var(--text-muted);
+  margin-top: 1px;
+}
+
+.btn-telegram-contact {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: #2aabee;
+  color: #ffffff;
+  text-decoration: none;
+  padding: 7px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 11.5px;
+  font-weight: 700;
+  transition: background 0.15s ease;
+}
+
+.btn-telegram-contact:hover {
+  background: #229ed9;
 }
 
 /* Modal Overlay */

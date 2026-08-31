@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Flipkart Review Search by Name & Location</title>
+  <title>Flipkart Review Search Pro</title>
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
@@ -38,7 +38,12 @@
       <div class="notice-text">
         <span>⚠️ Membership inactive or expired.</span>
       </div>
-      <button id="btnOpenRedeemModal" class="btn-redeem-sm">Activate Key</button>
+      <div class="notice-actions">
+        <button id="btnOpenRedeemModal" class="btn-redeem-sm">Activate Key</button>
+        <a href="https://t.me/mahabirgope7" target="_blank" class="btn-buy-sm" title="Buy membership on Telegram">
+          💬 Buy Access
+        </a>
+      </div>
     </div>
 
     <!-- Main Content -->
@@ -264,6 +269,22 @@
       </div>
     </main>
 
+    <!-- Professional Support & Telegram Contact Footer -->
+    <footer class="app-footer">
+      <div class="footer-contact-row">
+        <div class="support-info">
+          <span class="support-badge">24/7 Support</span>
+          <span>For membership purchase or any issues:</span>
+        </div>
+        <a href="https://t.me/mahabirgope7" target="_blank" class="telegram-link" title="Contact on Telegram">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+            <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.121l-6.871 4.326-2.962-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.832.942z"/>
+          </svg>
+          @mahabirgope7
+        </a>
+      </div>
+    </footer>
+
     <!-- Redeem Membership Modal -->
     <div id="redeemModal" class="modal-overlay hidden">
       <div class="modal-card">
@@ -272,12 +293,29 @@
           <button id="btnCloseModal" class="btn-close">&times;</button>
         </div>
         <div class="modal-body">
-          <p>Enter the License Key provided by your administrator to activate monthly, yearly, or custom access.</p>
+          <p>Enter the License Key provided by administrator to activate access.</p>
           <div class="form-group">
             <label for="redeemKeyInput">License Key:</label>
             <input type="text" id="redeemKeyInput" placeholder="e.g. FKPRO-30D-XXXX-YYYY" />
           </div>
           <div id="redeemAlert" class="alert-text hidden"></div>
+
+          <!-- Telegram Contact Callout in Modal -->
+          <div class="modal-contact-card">
+            <div class="contact-header">
+              <span class="tg-icon">💬</span>
+              <div>
+                <strong>Don't have a key or need assistance?</strong>
+                <p>Contact for membership purchase (Monthly / Yearly / Lifetime) or support:</p>
+              </div>
+            </div>
+            <a href="https://t.me/mahabirgope7" target="_blank" class="btn-telegram-contact">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+                <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.121l-6.871 4.326-2.962-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.832.942z"/>
+              </svg>
+              Chat on Telegram @mahabirgope7 ↗
+            </a>
+          </div>
         </div>
         <div class="modal-footer">
           <button id="btnSubmitRedeem" class="btn-primary">Activate License</button>
