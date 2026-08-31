@@ -344,11 +344,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
         <div class="review-footer">
           <span>${item.isCertified ? '✓ Certified Buyer' : ''} ${item.dateLocation ? '• ' + escapeHtml(item.dateLocation) : ''}</span>
-          <a href="${item.directUrl}" target="_blank" class="btn-open-perm">Open on Flipkart ↗</a>
+          <div class="footer-btn-group">
+            <button class="btn-copy-card-link" data-url="${item.directUrl}" title="Copy review link to clipboard">
+              📋 Copy Link
+            </button>
+            <a href="${item.directUrl}" target="_blank" class="btn-open-perm">Open on Flipkart ↗</a>
+          </div>
         </div>
       `;
 
       webReviewsList.appendChild(card);
+    });
+
+    // Attach 1-click copy handlers for each card
+    document.querySelectorAll('.btn-copy-card-link').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const url = btn.getAttribute('data-url');
+        navigator.clipboard.writeText(url).then(() => {
+          const originalText = btn.innerHTML;
+          btn.innerHTML = '✓ Copied!';
+          btn.style.color = 'var(--accent-green)';
+          btn.style.borderColor = 'var(--accent-green)';
+          setTimeout(() => {
+            btn.innerHTML = originalText;
+            btn.style.color = '';
+            btn.style.borderColor = '';
+          }, 1800);
+        }).catch(() => {
+          showAlert('Failed to copy link.');
+        });
+      });
     });
   }
 

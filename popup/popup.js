@@ -565,11 +565,33 @@ document.addEventListener('DOMContentLoaded', async () => {
           ${certifiedBadge}
           ${item.dateLocation ? `<span class="date-loc">• ${escapeHtml(item.dateLocation)}</span>` : ''}
         </div>
-        <a href="${item.directUrl}" target="_blank" class="btn-open-review" title="Open review page in new tab">
-          Open Review ↗
-        </a>
+        <div class="footer-right-buttons">
+          <button class="btn-copy-review-link" data-url="${item.directUrl}" title="Copy review link">
+            📋 Copy Link
+          </button>
+          <a href="${item.directUrl}" target="_blank" class="btn-open-review" title="Open review page in new tab">
+            Open Review ↗
+          </a>
+        </div>
       </div>
     `;
+
+    // 1-click copy handler
+    const copyBtn = card.querySelector('.btn-copy-review-link');
+    if (copyBtn) {
+      copyBtn.addEventListener('click', () => {
+        const url = copyBtn.getAttribute('data-url');
+        navigator.clipboard.writeText(url).then(() => {
+          const prev = copyBtn.innerHTML;
+          copyBtn.innerHTML = '✓ Copied!';
+          copyBtn.style.color = 'var(--accent-green)';
+          setTimeout(() => {
+            copyBtn.innerHTML = prev;
+            copyBtn.style.color = '';
+          }, 1800);
+        });
+      });
+    }
 
     reviewsList.appendChild(card);
   }
