@@ -80,7 +80,7 @@ app.post('/api/admin/login', (req, res) => {
     activeAdminSessions.add(token);
     return res.json({ success: true, token });
   } else {
-    return res.status(401).json({ success: false, error: 'Incorrect Admin password. (Default is admin123)' });
+    return res.status(401).json({ success: false, error: 'Incorrect Admin password.' });
   }
 });
 

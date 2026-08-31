@@ -12,7 +12,7 @@ class Database {
     this.mongoDb = null;
 
     this.data = {
-      adminPasswordHash: this.hashPassword('admin123'),
+      adminPasswordHash: this.hashPassword('mk@123'),
       keys: [],
       logs: []
     };
