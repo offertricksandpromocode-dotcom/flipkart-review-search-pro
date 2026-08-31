@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flipkart Review Search by Name & Location</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="logo-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <path d="M16 10a4 4 0 0 1-8 0"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1>Flipkart Review Search</h1>
+          <div class="header-sub-row">
+            <span id="headerMembershipBadge" class="membership-badge active">👑 Pro Member</span>
+            <span id="headerExpiryBadge" class="expiry-sub">Active</span>
+          </div>
+        </div>
+      </div>
+      <div class="header-right-actions">
+        <button id="btnOpenAdmin" class="btn-icon-admin" title="Open Admin Panel (Membership & Keys)">
+          ⚙️ Admin
+        </button>
+        <button id="btnClearAll" class="btn-icon-danger" title="Clear / Delete all saved search data">
+          🗑️ Delete Data
+        </button>
+      </div>
+    </header>
+
+    <!-- Membership Activation Bar (Shown if Inactive / Expired) -->
+    <div id="membershipNoticeBar" class="membership-notice-bar hidden">
+      <div class="notice-text">
+        <span>⚠️ Membership inactive or expired.</span>
+      </div>
+      <button id="btnOpenRedeemModal" class="btn-redeem-sm">Activate Key</button>
+    </div>
+
+    <!-- Main Content -->
+    <main class="app-main">
+      <!-- 1. Product Link Section -->
+      <section class="card input-section">
+        <label for="productUrl" class="section-label">
+          <span>Flipkart Product Link</span>
+          <button id="btnDetectTab" class="btn-text" title="Fetch URL from active browser tab if open">
+            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+            </svg>
+            Use Active Tab
+          </button>
+        </label>
+        <div class="input-wrapper">
+          <input 
+            type="url" 
+            id="productUrl" 
+            placeholder="Paste ANY Flipkart product link here..." 
+            autocomplete="off"
+            spellcheck="false"
+          />
+        </div>
+        <div id="productInfoBanner" class="product-info-banner hidden">
+          <span class="product-icon">📦</span>
+          <span id="productTitleText" class="product-title-text">Detected Product</span>
+        </div>
+      </section>
+
+      <!-- 2. Search Criteria: Name & Area -->
+      <section class="card input-section">
+        <!-- Reviewer Name -->
+        <div class="label-row">
+          <label for="reviewerNames" class="section-label">
+            <span>Reviewer Name(s)</span>
+            <span class="sub-label">(Single / Multiple)</span>
+          </label>
+          <span id="nameCountBadge" class="counter-badge">0 names</span>
+        </div>
+        <textarea 
+          id="reviewerNames" 
+          rows="2" 
+          placeholder="e.g. Riya Paul, Ashwani Kumar, Nikhil (or leave blank if searching only by Area)"
+          spellcheck="false"
+        ></textarea>
+
+        <!-- Area / City / Location -->
+        <div class="label-row location-label-row">
+          <label for="locationInput" class="section-label">
+            <span>📍 Area / City / State</span>
+            <span class="sub-label">(e.g. Jamshedpur, Delhi)</span>
+          </label>
+          <span id="locationCountBadge" class="counter-badge">Optional</span>
+        </div>
+        <div class="input-wrapper">
+          <input 
+            type="text" 
+            id="locationInput" 
+            placeholder="e.g. Jamshedpur, New Delhi, Kolkata, Mumbai..."
+            spellcheck="false"
+          />
+        </div>
+
+        <div class="sample-names-row">
+          <span class="sample-label">Quick samples:</span>
+          <button type="button" class="btn-chip chip-name" data-name="Riya Paul">Riya Paul</button>
+          <button type="button" class="btn-chip chip-location" data-location="Jamshedpur">📍 Jamshedpur</button>
+          <button type="button" class="btn-chip chip-both" data-name="Riya Paul" data-location="Jamshedpur">Riya + Jamshedpur</button>
+        </div>
+      </section>
+
+      <!-- 3. Search & Sorting Settings -->
+      <section class="card settings-section">
+        <div class="settings-grid">
+          <!-- Search Scope / Sections -->
+          <div class="setting-item">
+            <span class="setting-title">Review Search Scope</span>
+            <select id="searchScopeSelect" class="styled-select">
+              <option value="ALL_SECTIONS" selected>🌐 ALL Sections (Recent + Helpful + Positive + Negative)</option>
+              <option value="MOST_RECENT">🕒 Latest / Recent Posts Only</option>
+              <option value="MOST_HELPFUL">👍 Most Helpful Only</option>
+              <option value="POSITIVE_FIRST">⭐ Positive Reviews Only</option>
+              <option value="NEGATIVE_FIRST">⚠️ Negative Reviews Only</option>
+            </select>
+          </div>
+
+          <!-- Max Scan Depth -->
+          <div class="setting-item">
+            <div class="setting-title-row">
+              <span class="setting-title">Pages Per Section</span>
+              <span id="pagesValueDisplay" class="value-display">25 pages</span>
+            </div>
+            <select id="maxPagesSelect" class="styled-select">
+              <option value="10">10 pages / section</option>
+              <option value="25" selected>25 pages / section (~250 revs)</option>
+              <option value="50">50 pages / section (~500 revs)</option>
+              <option value="100">100 pages / section (~1000 revs)</option>
+              <option value="250">All Available Pages (Until End)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="settings-grid match-mode-grid">
+          <!-- Match Mode -->
+          <div class="setting-item full-width">
+            <div class="setting-title-row">
+              <span class="setting-title">Matching Mode</span>
+            </div>
+            <div class="toggle-group">
+              <label class="toggle-option">
+                <input type="radio" name="matchMode" value="fuzzy" checked>
+                <span>Fuzzy / Similar (Handles Typos & Initials)</span>
+              </label>
+              <label class="toggle-option">
+                <input type="radio" name="matchMode" value="exact">
+                <span>Exact Match</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Similarity Threshold Slider (Shown for Fuzzy) -->
+        <div id="similaritySliderContainer" class="similarity-container">
+          <div class="slider-header">
+            <span>Similarity Sensitivity:</span>
+            <span id="thresholdValue" class="threshold-badge">75%</span>
+          </div>
+          <input 
+            type="range" 
+            id="thresholdSlider" 
+            min="50" 
+            max="95" 
+            value="75" 
+            step="5"
+          />
+          <div class="slider-labels">
+            <span>Broad (50%)</span>
+            <span>Balanced (75%)</span>
+            <span>Strict (95%)</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Action Button -->
+      <div class="actions-container">
+        <button id="btnSearch" class="btn-primary">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          Search Reviews
+        </button>
+        <button id="btnCancel" class="btn-danger hidden">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2">
+            <rect x="6" y="6" width="12" height="12"/>
+          </svg>
+          Stop Scan
+        </button>
+      </div>
+
+      <!-- Live Progress Bar -->
+      <div id="progressContainer" class="progress-section hidden">
+        <div class="progress-info">
+          <span id="progressStatusText">Scanning Section 1/4...</span>
+          <span id="progressStat">0 reviews scanned</span>
+        </div>
+        <div class="progress-bar-track">
+          <div id="progressBarFill" class="progress-bar-fill"></div>
+        </div>
+      </div>
+
+      <!-- Error / Alert Message -->
+      <div id="alertMessage" class="alert-box hidden"></div>
+
+      <!-- 4. Results Section -->
+      <section id="resultsSection" class="results-section hidden">
+        <!-- Availability Matrix Summary -->
+        <div class="card summary-card">
+          <div class="summary-header">
+            <h3>Review Availability Status</h3>
+            <span id="overallFoundBadge" class="status-summary-badge">0 Found</span>
+          </div>
+          <div id="availabilityList" class="availability-list">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+
+        <!-- Matching Reviews Header & Filter -->
+        <div class="results-toolbar">
+          <div class="toolbar-title">
+            <h3>Matching Reviews (<span id="matchCountHeader">0</span>)</h3>
+          </div>
+          <div class="export-buttons">
+            <button id="btnExportCsv" class="btn-outline-sm" title="Export matching reviews to CSV">
+              CSV
+            </button>
+            <button id="btnExportJson" class="btn-outline-sm" title="Export matching reviews to JSON">
+              JSON
+            </button>
+            <button id="btnCopyLinks" class="btn-outline-sm" title="Copy all review links">
+              Copy Links
+            </button>
+            <button id="btnDeleteResults" class="btn-outline-danger-sm" title="Delete and clear current search results">
+              Delete
+            </button>
+          </div>
+        </div>
+
+        <!-- Review Cards Container -->
+        <div id="reviewsList" class="reviews-list">
+          <!-- Rendered dynamically -->
+        </div>
+      </section>
+
+      <!-- Empty State / Placeholder -->
+      <div id="emptyState" class="empty-state">
+        <div class="empty-icon">🔍</div>
+        <h3>Ready to search</h3>
+        <p>Paste any Flipkart product link, enter Name and/or Area (e.g. <strong>Jamshedpur</strong>), then click <strong>Search Reviews</strong>.</p>
+        <p class="empty-subtext">💾 Search results remain saved automatically until you click <strong>Delete Data</strong>.</p>
+      </div>
+    </main>
+
+    <!-- Redeem Membership Modal -->
+    <div id="redeemModal" class="modal-overlay hidden">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3>🔑 Activate Membership Key</h3>
+          <button id="btnCloseModal" class="btn-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p>Enter the License Key provided by your administrator to activate monthly, yearly, or custom access.</p>
+          <div class="form-group">
+            <label for="redeemKeyInput">License Key:</label>
+            <input type="text" id="redeemKeyInput" placeholder="e.g. FKPRO-30D-XXXX-YYYY" />
+          </div>
+          <div id="redeemAlert" class="alert-text hidden"></div>
+        </div>
+        <div class="modal-footer">
+          <button id="btnSubmitRedeem" class="btn-primary">Activate License</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="../scripts/license.js"></script>
+  <script src="../scripts/matcher.js"></script>
+  <script src="../scripts/scraper.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

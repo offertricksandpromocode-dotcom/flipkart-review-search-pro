@@ -1,0 +1,187 @@
+{
+  "adminPasswordHash": "fbecad219312053cbf355beb1f7d8c557565e674969ac9de786d1880501c2b51",
+  "keys": [
+    {
+      "id": "key_1788214119436_4xkq",
+      "key": "FKPRO-LIFE-96D414-14754B",
+      "planType": "LIFETIME",
+      "days": 36500,
+      "clientName": "VIP Client",
+      "maxDevices": 1,
+      "createdAt": 1788214119436,
+      "expiresAt": null,
+      "status": "ACTIVE",
+      "activatedDevices": [],
+      "firstActivatedAt": null
+    },
+    {
+      "id": "key_1788214119434_3r2o",
+      "key": "FKPRO-365D-2262C6-356C63",
+      "planType": "YEARLY",
+      "days": 365,
+      "clientName": "Client Gamma",
+      "maxDevices": 1,
+      "createdAt": 1788214119434,
+      "expiresAt": null,
+      "status": "ACTIVE",
+      "activatedDevices": [],
+      "firstActivatedAt": null
+    },
+    {
+      "id": "key_1788214119432_7jwz",
+      "key": "FKPRO-60D-8EE6B3-0A972B",
+      "planType": "CUSTOM",
+      "days": 60,
+      "clientName": "Client Beta",
+      "maxDevices": 1,
+      "createdAt": 1788214119432,
+      "expiresAt": null,
+      "status": "ACTIVE",
+      "activatedDevices": [],
+      "firstActivatedAt": null
+    },
+    {
+      "id": "key_1788214119429_4a57",
+      "key": "FKPRO-30D-E1BA5B-48F3C1",
+      "planType": "MONTHLY",
+      "days": 45,
+      "clientName": "Client Alpha",
+      "maxDevices": 1,
+      "createdAt": 1788214119429,
+      "expiresAt": 1792102119438,
+      "status": "ACTIVE",
+      "activatedDevices": [
+        "FK-DEV-TEST01"
+      ],
+      "firstActivatedAt": 1788214119438
+    },
+    {
+      "id": "key_1788213969858_l1nj",
+      "key": "FKPRO-LIFE-840564-93A848",
+      "planType": "LIFETIME",
+      "days": 36500,
+      "clientName": "VIP Client",
+      "maxDevices": 1,
+      "createdAt": 1788213969858,
+      "expiresAt": null,
+      "status": "ACTIVE",
+      "activatedDevices": [],
+      "firstActivatedAt": null
+    },
+    {
+      "id": "key_1788213969856_0zel",
+      "key": "FKPRO-365D-B1D2EE-9781A9",
+      "planType": "YEARLY",
+      "days": 365,
+      "clientName": "Client Gamma",
+      "maxDevices": 1,
+      "createdAt": 1788213969856,
+      "expiresAt": null,
+      "status": "ACTIVE",
+      "activatedDevices": [],
+      "firstActivatedAt": null
+    },
+    {
+      "id": "key_1788213969854_2t71",
+      "key": "FKPRO-60D-F37412-056DC6",
+      "planType": "CUSTOM",
+      "days": 60,
+      "clientName": "Client Beta",
+      "maxDevices": 1,
+      "createdAt": 1788213969854,
+      "expiresAt": null,
+      "status": "ACTIVE",
+      "activatedDevices": [],
+      "firstActivatedAt": null
+    },
+    {
+      "id": "key_1788213969851_s8re",
+      "key": "FKPRO-30D-120C0D-A53685",
+      "planType": "MONTHLY",
+      "days": 45,
+      "clientName": "Client Alpha",
+      "maxDevices": 1,
+      "createdAt": 1788213969851,
+      "expiresAt": 1792101969860,
+      "status": "ACTIVE",
+      "activatedDevices": [
+        "FK-DEV-TEST01"
+      ],
+      "firstActivatedAt": 1788213969860
+    }
+  ],
+  "logs": [
+    {
+      "id": "log_1788214119442",
+      "action": "KEY_EXTENDED",
+      "details": "License key FKPRO-30D-E1BA5B-48F3C1 extended by 15 days.",
+      "timestamp": "2026-08-31T22:08:39.442Z"
+    },
+    {
+      "id": "log_1788214119438",
+      "action": "KEY_ACTIVATED",
+      "details": "Key FKPRO-30D-E1BA5B-48F3C1 activated by device FK-DEV-TEST01",
+      "timestamp": "2026-08-31T22:08:39.438Z"
+    },
+    {
+      "id": "log_1788214119436",
+      "action": "KEY_GENERATED",
+      "details": "Key generated for VIP Client (LIFETIME - LIFE)",
+      "timestamp": "2026-08-31T22:08:39.436Z"
+    },
+    {
+      "id": "log_1788214119434",
+      "action": "KEY_GENERATED",
+      "details": "Key generated for Client Gamma (YEARLY - 365D)",
+      "timestamp": "2026-08-31T22:08:39.434Z"
+    },
+    {
+      "id": "log_1788214119432",
+      "action": "KEY_GENERATED",
+      "details": "Key generated for Client Beta (CUSTOM - 60D)",
+      "timestamp": "2026-08-31T22:08:39.432Z"
+    },
+    {
+      "id": "log_1788214119429",
+      "action": "KEY_GENERATED",
+      "details": "Key generated for Client Alpha (MONTHLY - 30D)",
+      "timestamp": "2026-08-31T22:08:39.429Z"
+    },
+    {
+      "id": "log_1788213969882",
+      "action": "KEY_EXTENDED",
+      "details": "License key FKPRO-30D-120C0D-A53685 extended by 15 days.",
+      "timestamp": "2026-08-31T22:06:09.882Z"
+    },
+    {
+      "id": "log_1788213969860",
+      "action": "KEY_ACTIVATED",
+      "details": "Key FKPRO-30D-120C0D-A53685 activated by device FK-DEV-TEST01",
+      "timestamp": "2026-08-31T22:06:09.860Z"
+    },
+    {
+      "id": "log_1788213969858",
+      "action": "KEY_GENERATED",
+      "details": "Key generated for VIP Client (LIFETIME - LIFE)",
+      "timestamp": "2026-08-31T22:06:09.858Z"
+    },
+    {
+      "id": "log_1788213969856",
+      "action": "KEY_GENERATED",
+      "details": "Key generated for Client Gamma (YEARLY - 365D)",
+      "timestamp": "2026-08-31T22:06:09.856Z"
+    },
+    {
+      "id": "log_1788213969854",
+      "action": "KEY_GENERATED",
+      "details": "Key generated for Client Beta (CUSTOM - 60D)",
+      "timestamp": "2026-08-31T22:06:09.854Z"
+    },
+    {
+      "id": "log_1788213969851",
+      "action": "KEY_GENERATED",
+      "details": "Key generated for Client Alpha (MONTHLY - 30D)",
+      "timestamp": "2026-08-31T22:06:09.851Z"
+    }
+  ]
+}

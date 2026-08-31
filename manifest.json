@@ -1,0 +1,41 @@
+{
+  "manifest_version": 3,
+  "name": "Flipkart Review Search Pro",
+  "version": "1.3.0",
+  "description": "Search Flipkart reviews by exact/similar name & location, multi-section exhaustive scanner, persistent results, and Admin Membership system.",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "Flipkart Review Search",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "options_page": "admin/admin.html",
+  "permissions": [
+    "activeTab",
+    "storage",
+    "scripting"
+  ],
+  "host_permissions": [
+    "*://*.flipkart.com/*",
+    "*://*.flixcart.com/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.flipkart.com/*"
+      ],
+      "js": [
+        "content/content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ]
+}

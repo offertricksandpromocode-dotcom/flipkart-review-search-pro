@@ -1,0 +1,25 @@
+# Node dependencies
+node_modules/
+server/node_modules/
+
+# Environment and sensitive keys
+.env
+server/.env
+
+# Temporary dumps and logs
+*.html
+!popup/popup.html
+!admin/admin.html
+!server/public/index.html
+script_*.js
+*.json
+!manifest.json
+!server/package.json
+!server/package-lock.json
+!server/data/database.json
+
+# OS and Editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
