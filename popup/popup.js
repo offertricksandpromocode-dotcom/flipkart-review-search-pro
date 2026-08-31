@@ -44,7 +44,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   const btnCopyLinks = document.getElementById('btnCopyLinks');
   const btnClearAll = document.getElementById('btnClearAll');
   const btnDeleteResults = document.getElementById('btnDeleteResults');
-  const btnOpenAdmin = document.getElementById('btnOpenAdmin');
 
   // Membership & Redeem Modal Elements
   const headerMembershipBadge = document.getElementById('headerMembershipBadge');
@@ -138,8 +137,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       btnDeleteResults.addEventListener('click', handleDeleteAllData);
     }
 
-    btnOpenAdmin.addEventListener('click', openAdminPanel);
-
     // Membership modal
     if (btnOpenRedeemModal) {
       btnOpenRedeemModal.addEventListener('click', () => {
@@ -217,14 +214,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       btnSubmitRedeem.disabled = false;
       btnSubmitRedeem.textContent = 'Activate License';
     }
-  }
-
-  /**
-   * Open Admin Panel in a new browser tab
-   */
-  function openAdminPanel() {
-    const adminUrl = chrome.runtime.getURL('admin/admin.html');
-    chrome.tabs.create({ url: adminUrl });
   }
 
   /**

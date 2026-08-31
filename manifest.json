@@ -17,7 +17,6 @@
       "128": "icons/icon128.png"
     }
   },
-  "options_page": "admin/admin.html",
   "permissions": [
     "activeTab",
     "storage",
