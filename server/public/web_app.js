@@ -126,8 +126,15 @@ document.addEventListener('DOMContentLoaded', () => {
       webProductBanner.classList.add('hidden');
       return;
     }
+
+    if (raw.includes('dl.flipkart.com/s/') || raw.includes('fkrt.it/') || raw.includes('fkrt.co/')) {
+      webProductTitleText.textContent = 'Mobile Short Link detected. (If 0 reviews found, copy full link from browser address bar)';
+      webProductBanner.classList.remove('hidden');
+      return;
+    }
+
     const slugMatch = raw.match(/flipkart\.com\/([^\/]+)/);
-    if (slugMatch && slugMatch[1]) {
+    if (slugMatch && slugMatch[1] && slugMatch[1] !== 's' && slugMatch[1] !== 'dl') {
       const title = slugMatch[1].replace(/-/g, ' ');
       currentProductTitle = title.charAt(0).toUpperCase() + title.slice(1);
       webProductTitleText.textContent = currentProductTitle;

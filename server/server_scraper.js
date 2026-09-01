@@ -4,17 +4,34 @@ const NameMatcher = require('../scripts/matcher.js');
 
 class ServerScraper {
   static USER_AGENTS = [
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
-    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:127.0) Gecko/20100101 Firefox/127.0'
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:128.0) Gecko/20100101 Firefox/128.0'
   ];
 
   static getRandomUserAgent() {
     return this.USER_AGENTS[Math.floor(Math.random() * this.USER_AGENTS.length)];
   }
 
+  static getStandardHeaders() {
+    return {
+      'User-Agent': this.getRandomUserAgent(),
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+      'Accept-Language': 'en-US,en;q=0.9,hi;q=0.8',
+      'Cache-Control': 'max-age=0',
+      'Sec-Ch-Ua': '"Chromium";v="128", "Not;A=Brand";v="24", "Google Chrome";v="128"',
+      'Sec-Ch-Ua-Mobile': '?0',
+      'Sec-Ch-Ua-Platform': '"Windows"',
+      'Sec-Fetch-Dest': 'document',
+      'Sec-Fetch-Mode': 'navigate',
+      'Sec-Fetch-Site': 'none',
+      'Sec-Fetch-User': '?1',
+      'Upgrade-Insecure-Requests': '1'
+    };
+  }
+
   /**
-   * Extract clean URL from messy text (e.g. WhatsApp/Telegram shares)
+   * Extract clean URL from messy text
    */
   static extractUrlFromText(text) {
     if (!text || typeof text !== 'string') return '';
@@ -23,57 +40,80 @@ class ServerScraper {
   }
 
   /**
-   * Follow HTTP/HTTPS redirects for short links (dl.flipkart.com, fkrt.it, etc.)
+   * Fully resolve redirects and JSON redirect payloads from Flipkart short links
    */
-  static async resolveRedirects(urlStr, maxHops = 6) {
-    let currentUrl = urlStr;
+  static async resolveRedirects(urlStr, maxHops = 5) {
+    if (!urlStr || typeof urlStr !== 'string') return '';
+    let currentUrl = urlStr.trim();
+
+    // 1. If it's already a full product URL, return immediately!
+    const isShortLink = currentUrl.includes('dl.flipkart.com') ||
+                        currentUrl.includes('fkrt.it') ||
+                        currentUrl.includes('fkrt.co') ||
+                        currentUrl.includes('/s/');
+
+    if (!isShortLink && (currentUrl.includes('/p/') || currentUrl.includes('/product-reviews/') || currentUrl.includes('pid='))) {
+      return currentUrl;
+    }
 
     for (let i = 0; i < maxHops; i++) {
       try {
         const parsed = new URL(currentUrl);
-        const isShortLink = parsed.hostname.includes('dl.flipkart.com') ||
-                            parsed.hostname.includes('fkrt.it') ||
-                            parsed.hostname.includes('fkrt.co') ||
-                            parsed.pathname.startsWith('/s/') ||
-                            parsed.pathname.startsWith('/dl/');
-
-        if (!isShortLink && (currentUrl.includes('pid=') || currentUrl.includes('/p/') || currentUrl.includes('/product-reviews/'))) {
-          // Already a full product URL
-          return currentUrl;
-        }
-
         const client = parsed.protocol === 'http:' ? http : https;
-        const res = await new Promise((resolve, reject) => {
+
+        const resData = await new Promise((resolve, reject) => {
           const req = client.request({
             hostname: parsed.hostname,
             path: parsed.pathname + parsed.search,
             method: 'GET',
-            headers: {
-              'User-Agent': this.getRandomUserAgent(),
-              'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
-            }
-          }, (response) => {
-            resolve({
-              statusCode: response.statusCode,
-              headers: response.headers
+            headers: this.getStandardHeaders()
+          }, (res) => {
+            let body = '';
+            res.on('data', chunk => body += chunk);
+            res.on('end', () => {
+              resolve({
+                statusCode: res.statusCode,
+                headers: res.headers,
+                body
+              });
             });
-            response.resume(); // consume stream
           });
+
           req.on('error', reject);
           req.setTimeout(8000, () => {
             req.destroy();
-            resolve({ statusCode: 200, headers: {} });
+            resolve({ statusCode: 200, headers: {}, body: '' });
           });
           req.end();
         });
 
-        if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
-          currentUrl = new URL(res.headers.location, currentUrl).href;
-        } else {
-          break;
+        // 1. Check HTTP 301/302 Location header
+        if (resData.statusCode >= 300 && resData.statusCode < 400 && resData.headers.location) {
+          currentUrl = new URL(resData.headers.location, currentUrl).href;
+          continue;
         }
+
+        // 2. Check JSON redirect body (Flipkart dl.flipkart.com API format)
+        if (resData.body && resData.body.includes('redirectUrl')) {
+          try {
+            const parsedJson = JSON.parse(resData.body);
+            const rUrl = (parsedJson.RESPONSE && parsedJson.RESPONSE.redirectUrl) || parsedJson.redirectUrl;
+            if (rUrl && rUrl.startsWith('http')) {
+              currentUrl = rUrl;
+              continue;
+            }
+          } catch (e) {
+            const match = resData.body.match(/"redirectUrl"\s*:\s*"(https?:[^"]+)"/);
+            if (match && match[1]) {
+              currentUrl = match[1].replace(/\\u0026/g, '&').replace(/\\/g, '');
+              continue;
+            }
+          }
+        }
+
+        break;
       } catch (err) {
-        console.warn('Redirect resolve warning:', err.message);
+        console.warn('Redirect resolution error:', err.message);
         break;
       }
     }
@@ -89,13 +129,13 @@ class ServerScraper {
       return { isValid: false, error: 'Empty URL provided.' };
     }
 
-    // 1. Extract URL if user pasted a text message
+    // 1. Extract URL if message text
     const extractedUrl = this.extractUrlFromText(rawInput);
     if (!extractedUrl) {
-      return { isValid: false, error: 'No valid URL found in the input.' };
+      return { isValid: false, error: 'No valid URL found in input.' };
     }
 
-    // 2. Follow redirects for short links (dl.flipkart.com / fkrt.it)
+    // 2. Follow short links & JSON redirect payloads
     const resolvedUrl = await this.resolveRedirects(extractedUrl);
 
     try {
@@ -111,19 +151,35 @@ class ServerScraper {
       const marketplace = parsed.searchParams.get('marketplace') || 'FLIPKART';
 
       const pathParts = parsed.pathname.split('/').filter(p => p.length > 0);
-      const slug = pathParts[0] || 'product';
 
+      // Smart slug detection: find item before /p/ or /product-reviews/
       let itmId = '';
+      let slug = '';
+
       const pIdx = pathParts.indexOf('p');
-      if (pIdx !== -1 && pathParts[pIdx + 1]) {
-        itmId = pathParts[pIdx + 1];
-      } else {
-        const productReviewsIdx = pathParts.indexOf('product-reviews');
-        if (productReviewsIdx !== -1 && pathParts[productReviewsIdx + 1]) {
-          itmId = pathParts[productReviewsIdx + 1];
+      if (pIdx !== -1) {
+        itmId = pathParts[pIdx + 1] || '';
+        if (pIdx > 0) {
+          slug = pathParts[pIdx - 1];
         }
       }
 
+      const revIdx = pathParts.indexOf('product-reviews');
+      if (revIdx !== -1) {
+        itmId = pathParts[revIdx + 1] || itmId;
+        if (revIdx > 0) {
+          slug = pathParts[revIdx - 1];
+        }
+      }
+
+      // If no /p/ or /product-reviews/ index found, filter out known system prefixes
+      if (!slug) {
+        const ignorePrefixes = ['dl', 'hi', 'en', 'bn', 'ta', 'te', 'kn', 'mr', 'gu', 's', 'item', 'product'];
+        const candidate = pathParts.find(p => !ignorePrefixes.includes(p.toLowerCase()) && !p.startsWith('itm'));
+        slug = candidate || pathParts[0] || 'product';
+      }
+
+      // Format clean product title
       const rawTitle = slug.replace(/-/g, ' ');
       const productTitle = rawTitle.charAt(0).toUpperCase() + rawTitle.slice(1);
 
@@ -158,28 +214,12 @@ class ServerScraper {
       const parsed = new URL(url);
       const client = parsed.protocol === 'http:' ? http : https;
 
-      const options = {
+      const req = client.request({
         hostname: parsed.hostname,
         path: parsed.pathname + parsed.search,
         method: 'GET',
-        headers: {
-          'User-Agent': this.getRandomUserAgent(),
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-          'Accept-Language': 'en-US,en;q=0.9',
-          'Cache-Control': 'no-cache',
-          'Pragma': 'no-cache',
-          'Sec-Ch-Ua': '"Not/A)Brand";v="8", "Chromium";v="126"',
-          'Sec-Ch-Ua-Mobile': '?0',
-          'Sec-Ch-Ua-Platform': '"Windows"',
-          'Sec-Fetch-Dest': 'document',
-          'Sec-Fetch-Mode': 'navigate',
-          'Sec-Fetch-Site': 'none',
-          'Sec-Fetch-User': '?1',
-          'Upgrade-Insecure-Requests': '1'
-        }
-      };
-
-      const req = client.request(options, (res) => {
+        headers: this.getStandardHeaders()
+      }, (res) => {
         if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
           const redirectUrl = new URL(res.headers.location, url).href;
           return resolve(this.fetchHtml(redirectUrl));
