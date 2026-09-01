@@ -13,16 +13,71 @@ class FlipkartScraper {
   ];
 
   /**
-   * Normalize any Flipkart URL into a base review listing URL.
+   * Extract clean URL from text (handles WhatsApp / Telegram share messages)
    */
-  static normalizeReviewUrl(rawUrl) {
-    if (!rawUrl || typeof rawUrl !== 'string') {
-      return { isValid: false, reviewUrl: '', productTitle: '', error: 'Please enter a valid Flipkart URL.' };
-    }
+  static extractUrlFromText(text) {
+    if (!text || typeof text !== 'string') return '';
+    const match = text.match(/https?:\/\/[^\s<>"'()]+/i);
+    return match ? match[0] : text.trim();
+  }
 
-    let urlObj;
+  /**
+   * Transforms ANY Flipkart link (short, app-share, desktop, product page) into a standardized review URL
+   * @param {string} rawInput 
+   * @returns {{ isValid: boolean, reviewUrl: string, pid?: string, productTitle?: string, error?: string }}
+   */
+  static normalizeReviewUrl(rawInput) {
     try {
-      urlObj = new URL(rawUrl.trim());
+      if (!rawInput || typeof rawInput !== 'string') {
+        return { isValid: false, error: 'Empty URL provided.' };
+      }
+
+      const cleanUrl = this.extractUrlFromText(rawInput);
+      const parsed = new URL(cleanUrl);
+
+      if (!parsed.hostname.includes('flipkart.com') && !parsed.hostname.includes('fkrt.it') && !parsed.hostname.includes('fkrt.co')) {
+        return { isValid: false, error: 'Please enter a valid Flipkart product link.' };
+      }
+
+      const pid = parsed.searchParams.get('pid');
+      const lid = parsed.searchParams.get('lid');
+      const marketplace = parsed.searchParams.get('marketplace') || 'FLIPKART';
+
+      const pathParts = parsed.pathname.split('/').filter(p => p.length > 0);
+      const slug = pathParts[0] || 'product';
+
+      let itmId = '';
+      const pIdx = pathParts.indexOf('p');
+      if (pIdx !== -1 && pathParts[pIdx + 1]) {
+        itmId = pathParts[pIdx + 1];
+      } else {
+        const productReviewsIdx = pathParts.indexOf('product-reviews');
+        if (productReviewsIdx !== -1 && pathParts[productReviewsIdx + 1]) {
+          itmId = pathParts[productReviewsIdx + 1];
+        }
+      }
+
+      const rawTitle = slug.replace(/-/g, ' ');
+      const productTitle = rawTitle.charAt(0).toUpperCase() + rawTitle.slice(1);
+
+      let reviewUrl = '';
+      if (itmId) {
+        reviewUrl = `https://www.flipkart.com/${slug}/product-reviews/${itmId}?pid=${pid || ''}`;
+      } else if (pid) {
+        reviewUrl = `https://www.flipkart.com/${slug}/product-reviews/itm?pid=${pid}`;
+      } else {
+        reviewUrl = `https://www.flipkart.com${parsed.pathname}`;
+      }
+
+      if (lid) reviewUrl += `&lid=${lid}`;
+      if (marketplace) reviewUrl += `&marketplace=${marketplace}`;
+
+      return {
+        isValid: true,
+        reviewUrl,
+        pid,
+        productTitle
+      };
     } catch (e) {
       return { isValid: false, reviewUrl: '', productTitle: '', error: 'Malformed URL format.' };
     }

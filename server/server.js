@@ -70,8 +70,8 @@ app.post('/api/search/scrape', async (req, res) => {
     return res.status(403).json({ error: licCheck.error || 'Invalid or expired License Key.' });
   }
 
-  // 2. Validate URL
-  const norm = ServerScraper.normalizeReviewUrl(productUrl);
+  // 2. Validate & Normalize ANY Flipkart URL (including short links and text shares)
+  const norm = await ServerScraper.normalizeUniversalUrl(productUrl);
   if (!norm.isValid) {
     return res.status(400).json({ error: norm.error || 'Invalid Flipkart Product URL.' });
   }

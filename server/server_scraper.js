@@ -13,16 +13,96 @@ class ServerScraper {
     return this.USER_AGENTS[Math.floor(Math.random() * this.USER_AGENTS.length)];
   }
 
-  static normalizeReviewUrl(urlStr) {
-    try {
-      if (!urlStr || typeof urlStr !== 'string') {
-        return { isValid: false, error: 'Empty URL provided.' };
+  /**
+   * Extract clean URL from messy text (e.g. WhatsApp/Telegram shares)
+   */
+  static extractUrlFromText(text) {
+    if (!text || typeof text !== 'string') return '';
+    const match = text.match(/https?:\/\/[^\s<>"'()]+/i);
+    return match ? match[0] : text.trim();
+  }
+
+  /**
+   * Follow HTTP/HTTPS redirects for short links (dl.flipkart.com, fkrt.it, etc.)
+   */
+  static async resolveRedirects(urlStr, maxHops = 6) {
+    let currentUrl = urlStr;
+
+    for (let i = 0; i < maxHops; i++) {
+      try {
+        const parsed = new URL(currentUrl);
+        const isShortLink = parsed.hostname.includes('dl.flipkart.com') ||
+                            parsed.hostname.includes('fkrt.it') ||
+                            parsed.hostname.includes('fkrt.co') ||
+                            parsed.pathname.startsWith('/s/') ||
+                            parsed.pathname.startsWith('/dl/');
+
+        if (!isShortLink && (currentUrl.includes('pid=') || currentUrl.includes('/p/') || currentUrl.includes('/product-reviews/'))) {
+          // Already a full product URL
+          return currentUrl;
+        }
+
+        const client = parsed.protocol === 'http:' ? http : https;
+        const res = await new Promise((resolve, reject) => {
+          const req = client.request({
+            hostname: parsed.hostname,
+            path: parsed.pathname + parsed.search,
+            method: 'GET',
+            headers: {
+              'User-Agent': this.getRandomUserAgent(),
+              'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+            }
+          }, (response) => {
+            resolve({
+              statusCode: response.statusCode,
+              headers: response.headers
+            });
+            response.resume(); // consume stream
+          });
+          req.on('error', reject);
+          req.setTimeout(8000, () => {
+            req.destroy();
+            resolve({ statusCode: 200, headers: {} });
+          });
+          req.end();
+        });
+
+        if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+          currentUrl = new URL(res.headers.location, currentUrl).href;
+        } else {
+          break;
+        }
+      } catch (err) {
+        console.warn('Redirect resolve warning:', err.message);
+        break;
       }
+    }
 
-      const cleanUrl = urlStr.trim();
-      const parsed = new URL(cleanUrl);
+    return currentUrl;
+  }
 
-      if (!parsed.hostname.includes('flipkart.com')) {
+  /**
+   * Universal URL Normalizer: handles ANY Flipkart product, review, app-share, or short link
+   */
+  static async normalizeUniversalUrl(rawInput) {
+    if (!rawInput || typeof rawInput !== 'string') {
+      return { isValid: false, error: 'Empty URL provided.' };
+    }
+
+    // 1. Extract URL if user pasted a text message
+    const extractedUrl = this.extractUrlFromText(rawInput);
+    if (!extractedUrl) {
+      return { isValid: false, error: 'No valid URL found in the input.' };
+    }
+
+    // 2. Follow redirects for short links (dl.flipkart.com / fkrt.it)
+    const resolvedUrl = await this.resolveRedirects(extractedUrl);
+
+    try {
+      const parsed = new URL(resolvedUrl);
+      const host = parsed.hostname.toLowerCase();
+
+      if (!host.includes('flipkart.com') && !host.includes('fkrt.it') && !host.includes('fkrt.co')) {
         return { isValid: false, error: 'Please enter a valid Flipkart product link.' };
       }
 
@@ -48,7 +128,9 @@ class ServerScraper {
       const productTitle = rawTitle.charAt(0).toUpperCase() + rawTitle.slice(1);
 
       let reviewUrl = '';
-      if (itmId) {
+      if (itmId && pid) {
+        reviewUrl = `https://www.flipkart.com/${slug}/product-reviews/${itmId}?pid=${pid}`;
+      } else if (itmId) {
         reviewUrl = `https://www.flipkart.com/${slug}/product-reviews/${itmId}?pid=${pid || ''}`;
       } else if (pid) {
         reviewUrl = `https://www.flipkart.com/${slug}/product-reviews/itm?pid=${pid}`;
@@ -62,6 +144,7 @@ class ServerScraper {
       return {
         isValid: true,
         reviewUrl,
+        resolvedUrl,
         pid,
         productTitle
       };
@@ -73,6 +156,8 @@ class ServerScraper {
   static fetchHtml(url) {
     return new Promise((resolve, reject) => {
       const parsed = new URL(url);
+      const client = parsed.protocol === 'http:' ? http : https;
+
       const options = {
         hostname: parsed.hostname,
         path: parsed.pathname + parsed.search,
@@ -94,8 +179,7 @@ class ServerScraper {
         }
       };
 
-      const req = https.request(options, (res) => {
-        // Handle redirect
+      const req = client.request(options, (res) => {
         if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
           const redirectUrl = new URL(res.headers.location, url).href;
           return resolve(this.fetchHtml(redirectUrl));
@@ -301,7 +385,6 @@ class ServerScraper {
           if (parsed.reviews.length === 0) break;
           currentPage++;
 
-          // Small politeness delay
           await new Promise(r => setTimeout(r, 200));
         } catch (pageErr) {
           console.warn(`Error on section ${section.name} page ${currentPage}:`, pageErr.message);
