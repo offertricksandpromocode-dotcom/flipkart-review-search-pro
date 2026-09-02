@@ -235,33 +235,71 @@ class Database {
   }
 
   /**
-   * Verify license validity
+   * Verify license validity and exact days remaining
    */
   verifyLicense({ key, deviceId }) {
-    if (!key) return { isValid: false, error: 'No key provided.' };
+    if (!key) return { isValid: false, error: 'No license key provided.' };
     const cleanKey = key.trim().toUpperCase();
 
     const record = this.data.keys.find(k => k.key.toUpperCase() === cleanKey);
     if (!record) {
-      return { isValid: false, error: 'License key not found.' };
+      return { isValid: false, error: 'License key not found in database.' };
     }
 
     if (record.status === 'REVOKED') {
-      return { isValid: false, error: 'License has been revoked.' };
+      return { isValid: false, isRevoked: true, error: 'This license has been revoked by the administrator.' };
     }
 
     const now = Date.now();
-    if (record.expiresAt && now > record.expiresAt && record.planType !== 'LIFETIME') {
+
+    // If key is brand new / not yet activated
+    if (!record.firstActivatedAt) {
+      return {
+        isValid: true,
+        isActivated: false,
+        planType: record.planType,
+        days: record.days,
+        daysRemaining: record.planType === 'LIFETIME' ? 9999 : record.days,
+        expiryDate: record.planType === 'LIFETIME' ? 'Lifetime Access' : `${record.days} Days (Starts on first use)`,
+        clientName: record.clientName
+      };
+    }
+
+    // Check expiration
+    if (record.expiresAt && now >= record.expiresAt && record.planType !== 'LIFETIME') {
       record.status = 'EXPIRED';
       this.syncKeyToMongo(record);
       this.save();
-      return { isValid: false, error: 'License has expired.' };
+      const expStr = new Date(record.expiresAt).toLocaleDateString();
+      return { 
+        isValid: false, 
+        isExpired: true,
+        error: `Your membership expired on ${expStr} (0 days remaining). Please renew your subscription.`,
+        daysRemaining: 0,
+        expiryDate: expStr,
+        planType: record.planType
+      };
     }
 
     const daysRemaining = record.planType === 'LIFETIME' ? 9999 : Math.max(0, Math.ceil((record.expiresAt - now) / (1000 * 60 * 60 * 24)));
 
+    if (daysRemaining <= 0 && record.planType !== 'LIFETIME') {
+      record.status = 'EXPIRED';
+      this.syncKeyToMongo(record);
+      this.save();
+      return { 
+        isValid: false, 
+        isExpired: true,
+        error: 'Your membership has expired (0 days remaining). Please renew your subscription.',
+        daysRemaining: 0,
+        expiryDate: new Date(record.expiresAt).toLocaleDateString(),
+        planType: record.planType
+      };
+    }
+
     return {
       isValid: true,
+      isActivated: true,
       planType: record.planType,
       daysRemaining,
       expiresAt: record.expiresAt,

@@ -2,6 +2,51 @@
   "adminPasswordHash": "6da6b911b3c4cae4effb0f5f124aa51e8e6a983528ce48d8e52f764124b53db2",
   "keys": [
     {
+      "id": "key_1788334954877_yash",
+      "key": "FKPRO-LIFE-C018F4-591473",
+      "planType": "LIFETIME",
+      "days": 36500,
+      "clientName": "Test VIP",
+      "maxDevices": 1,
+      "createdAt": 1788334954877,
+      "expiresAt": 4941934954878,
+      "status": "ACTIVE",
+      "activatedDevices": [
+        "DEV_TEST_3"
+      ],
+      "firstActivatedAt": 1788334954878
+    },
+    {
+      "id": "key_1788334954875_q23x",
+      "key": "FKPRO-1D-32CF22-E03B91",
+      "planType": "CUSTOM",
+      "days": 1,
+      "clientName": "Test Expired User",
+      "maxDevices": 1,
+      "createdAt": 1788334954875,
+      "expiresAt": 1788248554877,
+      "status": "EXPIRED",
+      "activatedDevices": [
+        "DEV_TEST_2"
+      ],
+      "firstActivatedAt": 1788334954876
+    },
+    {
+      "id": "key_1788334954853_vygw",
+      "key": "FKPRO-30D-954D13-B21C2D",
+      "planType": "MONTHLY",
+      "days": 30,
+      "clientName": "Test Active User",
+      "maxDevices": 1,
+      "createdAt": 1788334954853,
+      "expiresAt": 1790926954855,
+      "status": "ACTIVE",
+      "activatedDevices": [
+        "DEV_TEST_1"
+      ],
+      "firstActivatedAt": 1788334954855
+    },
+    {
       "id": "key_1788214119436_4xkq",
       "key": "FKPRO-LIFE-96D414-14754B",
       "planType": "LIFETIME",
@@ -111,6 +156,42 @@
     }
   ],
   "logs": [
+    {
+      "id": "log_1788334954878",
+      "action": "KEY_ACTIVATED",
+      "details": "Key FKPRO-LIFE-C018F4-591473 activated by device DEV_TEST_3",
+      "timestamp": "2026-09-02T07:42:34.878Z"
+    },
+    {
+      "id": "log_1788334954877",
+      "action": "KEY_GENERATED",
+      "details": "Key generated for Test VIP (LIFETIME - LIFE)",
+      "timestamp": "2026-09-02T07:42:34.877Z"
+    },
+    {
+      "id": "log_1788334954876",
+      "action": "KEY_ACTIVATED",
+      "details": "Key FKPRO-1D-32CF22-E03B91 activated by device DEV_TEST_2",
+      "timestamp": "2026-09-02T07:42:34.876Z"
+    },
+    {
+      "id": "log_1788334954875",
+      "action": "KEY_GENERATED",
+      "details": "Key generated for Test Expired User (CUSTOM - 1D)",
+      "timestamp": "2026-09-02T07:42:34.875Z"
+    },
+    {
+      "id": "log_1788334954855",
+      "action": "KEY_ACTIVATED",
+      "details": "Key FKPRO-30D-954D13-B21C2D activated by device DEV_TEST_1",
+      "timestamp": "2026-09-02T07:42:34.855Z"
+    },
+    {
+      "id": "log_1788334954853",
+      "action": "KEY_GENERATED",
+      "details": "Key generated for Test Active User (MONTHLY - 30D)",
+      "timestamp": "2026-09-02T07:42:34.853Z"
+    },
     {
       "id": "log_1788214119442",
       "action": "KEY_EXTENDED",

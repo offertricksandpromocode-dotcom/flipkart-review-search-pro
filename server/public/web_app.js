@@ -52,26 +52,65 @@ document.addEventListener('DOMContentLoaded', () => {
   let savedLicenseKey = localStorage.getItem('fk_web_license_key') || '';
   let activeMatchedReviews = [];
   let currentProductTitle = '';
+  let keyStatusData = { isValid: false, daysRemaining: 0, isExpired: false, planType: '' };
 
   // Initialize
   initKeyStatus();
   bindEvents();
   restoreSavedState();
 
-  function initKeyStatus() {
-    if (savedLicenseKey) {
-      userMembershipStatus.innerHTML = `
-        <span class="status-indicator"></span>
-        <span class="status-label">VIP Pro: ${savedLicenseKey.substring(0, 10)}...</span>
-      `;
-      userMembershipStatus.className = 'membership-pill active';
-      webKeyInput.value = savedLicenseKey;
-    } else {
+  async function initKeyStatus() {
+    if (!savedLicenseKey) {
       userMembershipStatus.innerHTML = `
         <span class="status-indicator"></span>
         <span class="status-label">Free Preview</span>
       `;
       userMembershipStatus.className = 'membership-pill inactive';
+      keyStatusData = { isValid: false, daysRemaining: 0, isExpired: false };
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/license/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key: savedLicenseKey })
+      });
+      const data = await res.json();
+      keyStatusData = data;
+
+      if (data.isValid) {
+        if (data.planType === 'LIFETIME') {
+          userMembershipStatus.innerHTML = `
+            <span class="status-indicator"></span>
+            <span class="status-label">👑 VIP Lifetime</span>
+          `;
+        } else {
+          const days = data.daysRemaining !== undefined ? data.daysRemaining : 30;
+          userMembershipStatus.innerHTML = `
+            <span class="status-indicator"></span>
+            <span class="status-label">👑 VIP Pro (${days} ${days === 1 ? 'Day' : 'Days'} Left)</span>
+          `;
+        }
+        userMembershipStatus.className = 'membership-pill active';
+        webKeyInput.value = savedLicenseKey;
+      } else {
+        // Expired or Revoked
+        userMembershipStatus.innerHTML = `
+          <span class="status-indicator" style="background: #dc2626;"></span>
+          <span class="status-label">⚠️ Expired (0 Days Left)</span>
+        `;
+        userMembershipStatus.className = 'membership-pill inactive';
+        userMembershipStatus.style.background = '#fee2e2';
+        userMembershipStatus.style.color = '#dc2626';
+        userMembershipStatus.style.borderColor = '#fca5a5';
+      }
+    } catch (err) {
+      userMembershipStatus.innerHTML = `
+        <span class="status-indicator"></span>
+        <span class="status-label">VIP Pro: ${savedLicenseKey.substring(0, 10)}...</span>
+      `;
+      userMembershipStatus.className = 'membership-pill active';
     }
   }
 
@@ -174,7 +213,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function showAlert(msg, type = 'error') {
     webAlert.textContent = msg;
-    webAlert.className = `alert-box ${type}`;
+    webAlert.className = `alert-banner ${type}`;
     webAlert.classList.remove('hidden');
   }
 
@@ -201,12 +240,13 @@ document.addEventListener('DOMContentLoaded', () => {
       if (data.isValid) {
         savedLicenseKey = key;
         localStorage.setItem('fk_web_license_key', key);
-        initKeyStatus();
+        await initKeyStatus();
         webKeyModal.classList.add('hidden');
         webKeyModalAlert.classList.add('hidden');
-        showAlert(`🎉 Key Activated (${data.planType} - ${data.expiryDate})!`, 'info');
+        const daysText = data.planType === 'LIFETIME' ? 'Lifetime Access' : `${data.daysRemaining} Days Left`;
+        showAlert(`🎉 Key Activated (${data.planType} • ${daysText})!`, 'info');
       } else {
-        webKeyModalAlert.textContent = data.error || 'Invalid or revoked license key.';
+        webKeyModalAlert.textContent = data.error || 'Invalid or expired license key.';
         webKeyModalAlert.classList.remove('hidden');
       }
     } catch (err) {
@@ -219,7 +259,14 @@ document.addEventListener('DOMContentLoaded', () => {
     hideAlert();
 
     if (!savedLicenseKey) {
-      showAlert('⚠️ Membership Key is required. Please click "Enter Key" above or contact @mahabirgope7 on Telegram.');
+      showAlert('⚠️ Membership Key is required to search reviews. Please enter your key or buy access on Telegram @mahabirgope7.');
+      webKeyModal.classList.remove('hidden');
+      return;
+    }
+
+    // Check expiration before search
+    if (keyStatusData.isExpired || (keyStatusData.daysRemaining !== undefined && keyStatusData.daysRemaining <= 0 && keyStatusData.planType !== 'LIFETIME')) {
+      showAlert('⚠️ Your membership has expired (0 days left). Please renew on Telegram @mahabirgope7.');
       webKeyModal.classList.remove('hidden');
       return;
     }
