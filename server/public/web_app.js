@@ -272,6 +272,13 @@ document.addEventListener('DOMContentLoaded', () => {
       renderResults(queryNames, queryLocations, activeMatchedReviews);
       saveState();
 
+      // Smooth scroll to results on mobile devices
+      if (window.innerWidth <= 900 && activeMatchedReviews.length > 0) {
+        setTimeout(() => {
+          webResultsToolbar.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 150);
+      }
+
       if (activeMatchedReviews.length === 0) {
         showAlert(`Scanned ${data.totalReviewsScanned} reviews across ${data.totalPagesScanned} pages. No matching reviews found.`, 'info');
       }
