@@ -60,11 +60,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function initKeyStatus() {
     if (savedLicenseKey) {
-      userMembershipStatus.innerHTML = `<span>👑 Key Active: ${savedLicenseKey.substring(0, 12)}...</span>`;
+      userMembershipStatus.innerHTML = `
+        <span class="status-indicator"></span>
+        <span class="status-label">VIP Pro: ${savedLicenseKey.substring(0, 10)}...</span>
+      `;
       userMembershipStatus.className = 'membership-pill active';
       webKeyInput.value = savedLicenseKey;
     } else {
-      userMembershipStatus.innerHTML = `<span>⚠️ Key Required</span>`;
+      userMembershipStatus.innerHTML = `
+        <span class="status-indicator"></span>
+        <span class="status-label">Free Preview</span>
+      `;
       userMembershipStatus.className = 'membership-pill inactive';
     }
   }
@@ -108,7 +114,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     webThresholdSlider.addEventListener('input', () => {
-      webThresholdVal.textContent = `${webThresholdSlider.value}%`;
+      const v = parseInt(webThresholdSlider.value, 10);
+      let desc = 'Balanced';
+      if (v <= 60) desc = 'Broad';
+      else if (v >= 90) desc = 'Strict';
+      webThresholdVal.textContent = `${v}% ${desc}`;
       saveState();
     });
 
