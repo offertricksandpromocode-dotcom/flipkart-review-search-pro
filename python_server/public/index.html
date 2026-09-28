@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Flipkart Review Search Pro - Premium Edition</title>
+  <link rel="stylesheet" href="web_app.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="web-wrapper">
+    <!-- Top Header -->
+    <header class="navbar">
+      <div class="nav-container">
+        <div class="nav-brand">
+          <div class="brand-badge">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+            </svg>
+          </div>
+          <div class="brand-info">
+            <h1>Flipkart Review Search <span class="pro-tag">PRO</span></h1>
+            <p>Smart Name & Location Finder across all review sections</p>
+          </div>
+        </div>
+
+        <div class="nav-actions">
+          <div id="userMembershipStatus" class="membership-pill inactive">
+            <span class="status-indicator"></span>
+            <span class="status-label">Free Preview</span>
+          </div>
+          <button id="btnOpenKeyModal" class="btn-glass">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 2l-2 2m-1.5 1.5L16 7l-1.5-1.5M16 7l-4 4-2-2-7 7v4h4l7-7-2-2 4-4z"/>
+            </svg>
+            <span>Activate Key</span>
+          </button>
+          <a href="https://t.me/mahabirgope7" target="_blank" class="btn-telegram-nav" title="Get Membership on Telegram">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+              <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.121l-6.871 4.326-2.962-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.832.942z"/>
+            </svg>
+            <span>Buy Access</span>
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="main-container">
+      <div class="content-grid">
+        <!-- Left Panel: Search Form -->
+        <div class="controls-column">
+          <!-- Step 1: Product Link -->
+          <div class="card premium-card">
+            <div class="card-step-header">
+              <span class="step-num">1</span>
+              <div class="step-title-wrap">
+                <h3>Flipkart Product Link</h3>
+                <p>Paste any product link or shared message</p>
+              </div>
+            </div>
+
+            <div class="input-container">
+              <div class="input-icon-prefix">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+                </svg>
+              </div>
+              <input 
+                type="url" 
+                id="webProductUrl" 
+                placeholder="https://www.flipkart.com/.../p/itm..."
+                autocomplete="off"
+                spellcheck="false"
+              />
+            </div>
+
+            <div id="webProductBanner" class="product-banner hidden">
+              <div class="product-banner-icon">📦</div>
+              <div class="product-banner-text">
+                <span class="product-tag">Detected Product</span>
+                <strong id="webProductTitleText">Flipkart Item</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 2: Search Criteria -->
+          <div class="card premium-card">
+            <div class="card-step-header">
+              <span class="step-num">2</span>
+              <div class="step-title-wrap">
+                <h3>Who or Where to Search?</h3>
+                <p>Enter reviewer names, city/area, or both</p>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <div class="label-row">
+                <label for="webNamesInput">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                  </svg>
+                  Reviewer Name(s)
+                </label>
+                <span id="webNameBadge" class="badge-subtle">0 names</span>
+              </div>
+              <textarea 
+                id="webNamesInput" 
+                rows="2" 
+                placeholder="e.g. Riya Paul, Ashwani Kumar, Manish (comma or line separated)"
+                spellcheck="false"
+              ></textarea>
+            </div>
+
+            <div class="form-group mt-3">
+              <div class="label-row">
+                <label for="webLocationInput">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z"/>
+                    <circle cx="12" cy="10" r="3"/>
+                  </svg>
+                  Area / City / Location
+                </label>
+                <span id="webLocBadge" class="badge-subtle">Optional</span>
+              </div>
+              <input 
+                type="text" 
+                id="webLocationInput" 
+                placeholder="e.g. Jamshedpur, New Delhi, Kolkata, Mumbai..."
+                spellcheck="false"
+              />
+            </div>
+
+            <div class="chips-container">
+              <span class="chips-title">Quick try:</span>
+              <button type="button" class="sample-chip" data-name="Riya Paul">Riya Paul</button>
+              <button type="button" class="sample-chip" data-loc="Jamshedpur">📍 Jamshedpur</button>
+              <button type="button" class="sample-chip" data-name="Riya Paul" data-loc="Jamshedpur">Riya + Jamshedpur</button>
+            </div>
+          </div>
+
+          <!-- Step 3: Scan Settings -->
+          <div class="card premium-card">
+            <div class="card-step-header">
+              <span class="step-num">3</span>
+              <div class="step-title-wrap">
+                <h3>Scan Scope & Precision</h3>
+                <p>Choose sections and fuzzy match sensitivity</p>
+              </div>
+            </div>
+
+            <div class="settings-grid-clean">
+              <div class="select-wrap">
+                <label for="webScopeSelect">Search Scope</label>
+                <select id="webScopeSelect" class="form-select-styled">
+                  <option value="ALL_SECTIONS" selected>🌐 ALL Sections (Recent + Helpful + Positive + Negative)</option>
+                  <option value="MOST_RECENT">🕒 Latest / Recent Posts Only</option>
+                  <option value="MOST_HELPFUL">👍 Most Helpful Only</option>
+                  <option value="POSITIVE_FIRST">⭐ Positive Reviews Only</option>
+                  <option value="NEGATIVE_FIRST">⚠️ Negative Reviews Only</option>
+                </select>
+              </div>
+
+              <div class="select-wrap">
+                <label for="webMaxPages">Scan Depth</label>
+                <select id="webMaxPages" class="form-select-styled">
+                  <option value="10">10 pages / section (~100 revs)</option>
+                  <option value="25" selected>25 pages / section (~250 revs)</option>
+                  <option value="50">50 pages / section (~500 revs)</option>
+                  <option value="100">100 pages / section (~1000 revs)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="slider-box mt-3">
+              <div class="label-row">
+                <label>Fuzzy Match Sensitivity</label>
+                <span id="webThresholdVal" class="threshold-pill">75% Balanced</span>
+              </div>
+              <input type="range" id="webThresholdSlider" min="50" max="95" value="75" step="5" class="range-slider" />
+              <div class="slider-markers">
+                <span>Broad (50%)</span>
+                <span>Balanced (75%)</span>
+                <span>Strict (95%)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="cta-actions">
+            <button id="btnWebSearch" class="btn-cta-search">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5">
+                <circle cx="11" cy="11" r="8"/>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              <span>Search Reviews</span>
+            </button>
+            <button id="btnWebDelete" class="btn-cta-clear" title="Clear all search data">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"/>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+              </svg>
+              <span>Clear</span>
+            </button>
+          </div>
+
+          <!-- Live Progress Bar -->
+          <div id="webProgressBox" class="progress-card hidden">
+            <div class="progress-status-row">
+              <div class="spinner-dot"></div>
+              <span id="webProgressText">Scanning Flipkart reviews in cloud...</span>
+            </div>
+            <div class="progress-track">
+              <div id="webProgressBarFill" class="progress-fill"></div>
+            </div>
+          </div>
+
+          <div id="webAlert" class="alert-banner hidden"></div>
+        </div>
+
+        <!-- Right Panel: Results & Availability -->
+        <div class="results-column">
+          <!-- Availability Matrix -->
+          <div id="webAvailabilityCard" class="card premium-card availability-panel hidden">
+            <div class="panel-header-clean">
+              <div class="header-with-icon">
+                <span class="icon-bubble green">✓</span>
+                <div>
+                  <h3>Availability Status</h3>
+                  <p>Target search queries summary</p>
+                </div>
+              </div>
+              <span id="webTotalFoundPill" class="found-counter-pill">0 Found</span>
+            </div>
+            <div id="webAvailabilityList" class="availability-grid">
+              <!-- Injected via JS -->
+            </div>
+          </div>
+
+          <!-- Matching Reviews Header & Toolbar -->
+          <div id="webResultsToolbar" class="results-top-toolbar hidden">
+            <div class="results-count-title">
+              <h3>Matching Reviews</h3>
+              <span id="webMatchCount" class="count-bubble">0</span>
+            </div>
+            <div class="export-toolbar">
+              <button id="btnWebCsv" class="btn-export">
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="7 10 12 15 17 10"/>
+                  <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                CSV
+              </button>
+              <button id="btnWebJson" class="btn-export">JSON</button>
+              <button id="btnWebCopyLinks" class="btn-export highlight">
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                </svg>
+                Copy All Links
+              </button>
+            </div>
+          </div>
+
+          <!-- Reviews Cards Feed -->
+          <div id="webReviewsList" class="reviews-feed">
+            <!-- Review Cards Injected dynamically -->
+          </div>
+
+          <!-- Empty State -->
+          <div id="webEmptyState" class="empty-state-card">
+            <div class="empty-art-icon">
+              <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="11" cy="11" r="8"/>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                <path d="M11 8v6M8 11h6"/>
+              </svg>
+            </div>
+            <h3>Ready to Search Flipkart Reviews</h3>
+            <p>Paste any product link, specify reviewer name or area (e.g. <strong>Jamshedpur</strong>), and our cloud scanner will search across all review sections.</p>
+            <div class="feature-badges-row">
+              <span class="feat-pill">⚡ Multi-Section Scanner</span>
+              <span class="feat-pill">📍 City / Location Filter</span>
+              <span class="feat-pill">💾 Lifetime Cloud Sync</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <div class="footer-content">
+        <div class="footer-left">
+          <span class="footer-logo">⚡ FK Review Search Pro</span>
+          <span class="footer-sep">•</span>
+          <span>Fast, Accurate & Autonomous Cloud Tool</span>
+        </div>
+        <div class="footer-contact">
+          <span>Need a Membership or Support?</span>
+          <a href="https://t.me/mahabirgope7" target="_blank" class="tg-badge-link">
+            <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor">
+              <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.121l-6.871 4.326-2.962-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.832.942z"/>
+            </svg>
+            @mahabirgope7 on Telegram
+          </a>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Key Entry / Activation Modal -->
+    <div id="webKeyModal" class="modal-backdrop hidden">
+      <div class="modal-dialog">
+        <div class="modal-head">
+          <div class="modal-icon-badge">🔑</div>
+          <div>
+            <h3>Activate Membership Key</h3>
+            <p>Unlock unlimited searches across all Flipkart reviews</p>
+          </div>
+          <button id="btnCloseKeyModal" class="btn-close-x">&times;</button>
+        </div>
+
+        <div class="modal-body-content">
+          <div class="form-group">
+            <label for="webKeyInput">Membership License Key:</label>
+            <input 
+              type="text" 
+              id="webKeyInput" 
+              placeholder="e.g. FKPRO-30D-XXXX-YYYY"
+              class="mono-input" 
+              autocomplete="off"
+            />
+          </div>
+          <div id="webKeyModalAlert" class="alert-inline hidden"></div>
+
+          <div class="telegram-promo-card">
+            <div class="promo-header">
+              <span class="tg-circle-icon">💬</span>
+              <div>
+                <strong>Don't have a membership key?</strong>
+                <p>Get Monthly (30d), Yearly (365d), Custom Days, or Lifetime access instantly:</p>
+              </div>
+            </div>
+            <a href="https://t.me/mahabirgope7" target="_blank" class="btn-tg-cta">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.121l-6.871 4.326-2.962-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.832.942z"/>
+              </svg>
+              Chat on Telegram @mahabirgope7 ↗
+            </a>
+          </div>
+        </div>
+
+        <div class="modal-foot">
+          <button id="btnSubmitWebKey" class="btn-modal-submit">Verify & Activate Access</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="web_app.js"></script>
+</body>
+</html>
