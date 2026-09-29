@@ -4,7 +4,7 @@
  */
 
 class LicenseEngine {
-  static DEFAULT_BACKEND_URL = 'https://flipkart-review-search-pro.onrender.com';
+  static DEFAULT_BACKEND_URL = 'https://flipkart.runpython.online';
   static SECRET_SALT = 'FLIPKART_SEARCH_PRO_V1_2026_SECRET';
 
   /**

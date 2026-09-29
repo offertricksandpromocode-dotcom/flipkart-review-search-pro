@@ -27,21 +27,15 @@
         </div>
 
         <div class="nav-actions">
-          <div id="userMembershipStatus" class="membership-pill inactive">
+          <div class="membership-pill active">
             <span class="status-indicator"></span>
-            <span class="status-label">Free Preview</span>
+            <span class="status-label">⚡ Unlimited Access</span>
           </div>
-          <button id="btnOpenKeyModal" class="btn-glass">
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 2l-2 2m-1.5 1.5L16 7l-1.5-1.5M16 7l-4 4-2-2-7 7v4h4l7-7-2-2 4-4z"/>
-            </svg>
-            <span>Activate Key</span>
-          </button>
-          <a href="https://t.me/mahabirgope7" target="_blank" class="btn-telegram-nav" title="Get Membership on Telegram">
+          <a href="https://t.me/mahabirgope7" target="_blank" class="btn-telegram-nav" title="Contact on Telegram">
             <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
               <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.121l-6.871 4.326-2.962-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.832.942z"/>
             </svg>
-            <span>Buy Access</span>
+            <span>💬 Telegram Support</span>
           </a>
         </div>
       </div>
@@ -313,53 +307,6 @@
       </div>
     </footer>
 
-    <!-- Key Entry / Activation Modal -->
-    <div id="webKeyModal" class="modal-backdrop hidden">
-      <div class="modal-dialog">
-        <div class="modal-head">
-          <div class="modal-icon-badge">🔑</div>
-          <div>
-            <h3>Activate Membership Key</h3>
-            <p>Unlock unlimited searches across all Flipkart reviews</p>
-          </div>
-          <button id="btnCloseKeyModal" class="btn-close-x">&times;</button>
-        </div>
-
-        <div class="modal-body-content">
-          <div class="form-group">
-            <label for="webKeyInput">Membership License Key:</label>
-            <input 
-              type="text" 
-              id="webKeyInput" 
-              placeholder="e.g. FKPRO-30D-XXXX-YYYY"
-              class="mono-input" 
-              autocomplete="off"
-            />
-          </div>
-          <div id="webKeyModalAlert" class="alert-inline hidden"></div>
-
-          <div class="telegram-promo-card">
-            <div class="promo-header">
-              <span class="tg-circle-icon">💬</span>
-              <div>
-                <strong>Don't have a membership key?</strong>
-                <p>Get Monthly (30d), Yearly (365d), Custom Days, or Lifetime access instantly:</p>
-              </div>
-            </div>
-            <a href="https://t.me/mahabirgope7" target="_blank" class="btn-tg-cta">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-                <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.121l-6.871 4.326-2.962-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.832.942z"/>
-              </svg>
-              Chat on Telegram @mahabirgope7 ↗
-            </a>
-          </div>
-        </div>
-
-        <div class="modal-foot">
-          <button id="btnSubmitWebKey" class="btn-modal-submit">Verify & Activate Access</button>
-        </div>
-      </div>
-    </div>
   </div>
 
   <script src="web_app.js"></script>
