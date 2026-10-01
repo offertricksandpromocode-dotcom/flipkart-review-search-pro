@@ -177,18 +177,17 @@ class LicenseEngine {
       }
 
       chrome.storage.local.get(['membershipData'], async (res) => {
-        const data = res.membershipData;
-        if (!data || !data.expiresAt) {
-          resolve({
-            isActive: false,
-            planType: 'NONE',
-            daysRemaining: 0,
-            expiryDate: 'No active membership',
-            isLifetime: false,
-            clientName: ''
-          });
-          return;
-        }
+        const data = res.membershipData || {};
+        resolve({
+          isActive: true,
+          planType: data.planType || 'FREE_PRO',
+          daysRemaining: 9999,
+          expiryDate: '100% Free & Unlimited',
+          isLifetime: true,
+          clientName: data.clientName || 'Free User',
+          licenseKey: data.licenseKey || 'FREE-ACCESS'
+        });
+        return;
 
         const now = Date.now();
         const isLifetime = data.planType === 'LIFETIME';

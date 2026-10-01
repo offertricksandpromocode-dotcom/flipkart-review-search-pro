@@ -52,6 +52,8 @@ document.addEventListener('DOMContentLoaded', () => {
   let savedLicenseKey = localStorage.getItem('fk_web_license_key') || '';
   let activeMatchedReviews = [];
   let currentProductTitle = '';
+  let currentProductImage = '';
+  let currentProductPrice = '';
   let keyStatusData = { isValid: false, daysRemaining: 0, isExpired: false, planType: '' };
 
   // Initialize
@@ -115,17 +117,23 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function bindEvents() {
-    btnOpenKeyModal.addEventListener('click', () => {
-      webKeyModal.classList.remove('hidden');
-      webKeyInput.focus();
-    });
+    if (btnOpenKeyModal && webKeyModal) {
+      btnOpenKeyModal.addEventListener('click', () => {
+        webKeyModal.classList.remove('hidden');
+        if (webKeyInput) webKeyInput.focus();
+      });
+    }
 
-    btnCloseKeyModal.addEventListener('click', () => {
-      webKeyModal.classList.add('hidden');
-      webKeyModalAlert.classList.add('hidden');
-    });
+    if (btnCloseKeyModal && webKeyModal) {
+      btnCloseKeyModal.addEventListener('click', () => {
+        webKeyModal.classList.add('hidden');
+        if (webKeyModalAlert) webKeyModalAlert.classList.add('hidden');
+      });
+    }
 
-    btnSubmitWebKey.addEventListener('click', handleSaveLicenseKey);
+    if (btnSubmitWebKey) {
+      btnSubmitWebKey.addEventListener('click', handleSaveLicenseKey);
+    }
 
     webProductUrl.addEventListener('input', () => {
       onUrlChange();
@@ -258,19 +266,6 @@ document.addEventListener('DOMContentLoaded', () => {
   async function handleExecuteSearch() {
     hideAlert();
 
-    if (!savedLicenseKey) {
-      showAlert('⚠️ Membership Key is required to search reviews. Please enter your key or buy access on Telegram @mahabirgope7.');
-      webKeyModal.classList.remove('hidden');
-      return;
-    }
-
-    // Check expiration before search
-    if (keyStatusData.isExpired || (keyStatusData.daysRemaining !== undefined && keyStatusData.daysRemaining <= 0 && keyStatusData.planType !== 'LIFETIME')) {
-      showAlert('⚠️ Your membership has expired (0 days left). Please renew on Telegram @mahabirgope7.');
-      webKeyModal.classList.remove('hidden');
-      return;
-    }
-
     const rawUrl = webProductUrl.value.trim();
     if (!rawUrl) {
       showAlert('Please enter a Flipkart product link.');
@@ -280,12 +275,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const queryNames = getNames();
     const queryLocations = getLocations();
-
-    if (queryNames.length === 0 && queryLocations.length === 0) {
-      showAlert('Please enter at least one Reviewer Name or Area/Location to search.');
-      webNamesInput.focus();
-      return;
-    }
 
     // UI Loading state
     btnWebSearch.disabled = true;
@@ -316,10 +305,28 @@ document.addEventListener('DOMContentLoaded', () => {
         body: JSON.stringify(payload)
       });
 
-      const data = await response.json();
+      const rawText = await response.text();
+      let data;
+      try {
+        data = JSON.parse(rawText);
+      } catch (parseErr) {
+        throw new Error('Server request took too long or returned an error. Please try scanning with Scan Depth: 10 or 5 pages/section.');
+      }
 
       if (!response.ok || !data.success) {
         throw new Error(data.error || 'Search request failed.');
+      }
+
+      if (data.productTitle) {
+        currentProductTitle = data.productTitle;
+        webProductTitleText.textContent = data.productTitle;
+        webProductBanner.classList.remove('hidden');
+      }
+      if (data.productImageUrl) {
+        currentProductImage = data.productImageUrl;
+      }
+      if (data.productPrice) {
+        currentProductPrice = data.productPrice;
       }
 
       webProgressBarFill.style.width = '100%';
@@ -416,6 +423,9 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="review-footer">
           <span>${item.isCertified ? '✓ Certified Buyer' : ''} ${item.dateLocation ? '• ' + escapeHtml(item.dateLocation) : ''}</span>
           <div class="footer-btn-group">
+            <button class="btn-card-screenshot" title="Download HD Screenshot of this Review">
+              📸 Download SS
+            </button>
             <button class="btn-copy-card-link" data-url="${item.directUrl}" title="Copy review link to clipboard">
               📋 Copy Link
             </button>
@@ -425,6 +435,183 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
 
       webReviewsList.appendChild(card);
+    });
+
+    // Attach 1-click Screenshot handlers for each card (Pixel-Perfect HD Desktop SS)
+    document.querySelectorAll('.btn-card-screenshot').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const card = btn.closest('.web-review-card');
+        if (!card) return;
+
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '⏳ Generating HD SS...';
+        btn.disabled = true;
+
+        const reviewerName = card.querySelector('.reviewer-name')?.textContent.trim() || 'Flipkart Customer';
+        const ratingText = card.querySelector('.rating-box')?.textContent.trim().replace('★', '').trim() || '5';
+        const titleText = card.querySelector('.review-headline')?.textContent.trim() || 'Review';
+        const bodyText = card.querySelector('.review-text')?.textContent.trim() || '';
+        const locText = card.querySelector('.loc-badge')?.textContent.replace('📍', '').trim() || '';
+        const footerSpan = card.querySelector('.review-footer > span')?.textContent.trim() || '';
+        const directUrl = card.querySelector('.btn-copy-card-link')?.getAttribute('data-url') || '';
+        const safeName = reviewerName.replace(/[^a-zA-Z0-9_-]/g, '_');
+
+        try {
+          if (typeof html2canvas === 'undefined') {
+            await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
+          }
+
+          const numRating = parseFloat(ratingText) || 5;
+          const ratingBg = numRating <= 2 ? '#ff6161' : numRating === 3 ? '#ff9f00' : '#388e3c';
+          const prodTitle = currentProductTitle || 'Flipkart Product Review';
+
+          // Preload product image via local image proxy if available
+          let proxiedImgUrl = '';
+          if (currentProductImage) {
+            proxiedImgUrl = `/api/proxy-image?url=${encodeURIComponent(currentProductImage)}`;
+            try {
+              const testImg = new Image();
+              testImg.crossOrigin = 'anonymous';
+              await new Promise((resolve) => {
+                testImg.onload = resolve;
+                testImg.onerror = resolve;
+                testImg.src = proxiedImgUrl;
+                setTimeout(resolve, 3000); // 3s timeout
+              });
+            } catch (e) {}
+          }
+
+          const cleanDate = footerSpan.replace('✓ Certified Buyer', '').replace(/^•\s*/, '').trim() || (locText ? locText : 'Verified Purchase');
+
+          // Create authentic Desktop Flipkart webpage mock container (1120px width)
+          const mockContainer = document.createElement('div');
+          mockContainer.style.position = 'fixed';
+          mockContainer.style.left = '-9999px';
+          mockContainer.style.top = '0';
+          mockContainer.style.width = '1120px';
+          mockContainer.style.backgroundColor = '#ffffff';
+          mockContainer.style.fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
+          mockContainer.style.boxSizing = 'border-box';
+          mockContainer.style.color = '#212121';
+
+          mockContainer.innerHTML = `
+            <!-- Flipkart Main Desktop Navbar -->
+            <div style="background: #2874f0; padding: 10px 48px; display: flex; align-items: center; justify-content: space-between; box-sizing: border-box;">
+              <div style="display: flex; align-items: center; gap: 28px; flex: 1;">
+                <div style="display: flex; flex-direction: column;">
+                  <span style="font-size: 20px; font-weight: 800; font-style: italic; color: #ffffff; letter-spacing: -0.5px; line-height: 1;">Flipkart</span>
+                  <span style="font-size: 11px; font-style: italic; color: #ffe500; font-weight: 600; margin-top: 2px;">Explore <span style="color: #fff;">Plus</span> ✦</span>
+                </div>
+                <div style="flex: 0 1 520px; position: relative;">
+                  <input type="text" value="Search for products, brands and more" readonly style="width: 100%; height: 36px; padding: 0 16px; border: none; border-radius: 2px; font-size: 14px; color: #878787; outline: none; box-shadow: 0 1px 2px 0 rgba(0,0,0,.2); box-sizing: border-box;" />
+                  <span style="position: absolute; right: 12px; top: 8px; color: #2874f0; font-size: 15px; font-weight: bold;">🔍</span>
+                </div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 28px; color: #ffffff; font-size: 15px; font-weight: 600;">
+                <div style="background: #ffffff; color: #2874f0; padding: 6px 36px; font-weight: 700; border-radius: 2px; font-size: 14px; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">Login</div>
+                <span>Become a Seller</span>
+                <span>More ▾</span>
+                <span style="display: flex; align-items: center; gap: 6px;">🛒 Cart</span>
+              </div>
+            </div>
+
+            <!-- Sub Navigation Categories -->
+            <div style="background: #ffffff; border-bottom: 1px solid #f0f0f0; padding: 12px 48px; display: flex; align-items: center; justify-content: space-between; font-size: 13px; font-weight: 600; color: #212121; box-shadow: 0 1px 1px 0 rgba(0,0,0,.06); box-sizing: border-box;">
+              <span>Electronics ▾</span><span>TVs & Appliances ▾</span><span>Men ▾</span><span>Women ▾</span><span>Baby & Kids ▾</span><span>Home & Furniture ▾</span><span>Sports, Books & More ▾</span><span>Flights</span><span>Offer Zone</span>
+            </div>
+
+            <!-- Main Review Container Box -->
+            <div style="background: #ffffff; padding: 32px 48px 40px; display: flex; gap: 40px; min-height: 380px; box-sizing: border-box;">
+              <!-- Left Product Column -->
+              <div style="width: 250px; flex-shrink: 0; display: flex; flex-direction: column; align-items: flex-start;">
+                ${proxiedImgUrl ? `
+                  <div style="width: 200px; height: 210px; display: flex; align-items: center; justify-content: center; margin-bottom: 12px; background: #ffffff;">
+                    <img src="${proxiedImgUrl}" crossorigin="anonymous" style="max-width: 100%; max-height: 100%; object-fit: contain; display: block;" />
+                  </div>
+                ` : `
+                  <div style="width: 180px; height: 190px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 48px; margin-bottom: 12px;">
+                    🛍️
+                  </div>
+                `}
+                <div style="color: #ff6161; font-size: 13px; font-weight: 600; margin-bottom: 6px;">
+                  Currently unavailable
+                </div>
+                <div style="font-size: 13px; font-weight: 600; line-height: 1.4; color: #212121; margin-bottom: 8px; word-break: break-word;">
+                  ${escapeHtml(prodTitle)}
+                </div>
+                <div style="display: flex; align-items: center; gap: 4px; margin-bottom: 6px;">
+                  <span style="color: #2874f0; font-weight: 800; font-style: italic; font-size: 13px;">🛡️ Assured</span>
+                </div>
+              </div>
+
+              <!-- Right Review Column -->
+              <div style="flex: 1; border-left: 1px solid #f0f0f0; padding-left: 40px; display: flex; flex-direction: column; box-sizing: border-box;">
+                <div style="font-size: 19px; font-weight: 700; color: #212121; margin-bottom: 22px;">
+                  Customer Review
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                  <span style="background: ${ratingBg}; color: #ffffff; font-size: 12px; font-weight: 700; padding: 2px 7px; border-radius: 3px; display: inline-flex; align-items: center; gap: 2px;">
+                    ${escapeHtml(ratingText)} ★
+                  </span>
+                  <span style="font-size: 15px; font-weight: 700; color: #212121;">${escapeHtml(titleText)}</span>
+                </div>
+                <div style="font-size: 14px; line-height: 1.5; color: #212121; margin-bottom: 22px; white-space: pre-wrap; word-break: break-word;">
+                  ${escapeHtml(bodyText || titleText)}
+                </div>
+                <div style="display: flex; align-items: center; justify-content: space-between; font-size: 13px; color: #878787; margin-bottom: 32px;">
+                  <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-weight: 600; color: #878787;">${escapeHtml(reviewerName)}</span>
+                    <span style="display: inline-flex; align-items: center; gap: 4px; color: #878787;">
+                      <span style="width: 14px; height: 14px; background: #878787; color: #fff; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 9px;">✓</span>
+                      Certified Buyer
+                    </span>
+                    <span>${escapeHtml(cleanDate)}</span>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 16px; font-size: 13px; color: #878787;">
+                    <span>👍 0</span><span>👎 0</span>
+                  </div>
+                </div>
+                <div style="margin-top: auto; padding-top: 16px; border-top: 1px solid #f0f0f0;">
+                  <span style="color: #2874f0; font-size: 14px; font-weight: 600;">
+                    View all reviews of the product
+                  </span>
+                </div>
+              </div>
+            </div>
+          `;
+
+          document.body.appendChild(mockContainer);
+          const canvas = await html2canvas(mockContainer, {
+            scale: 2,
+            useCORS: true,
+            allowTaint: true,
+            backgroundColor: '#ffffff'
+          });
+          document.body.removeChild(mockContainer);
+
+          const link = document.createElement('a');
+          link.download = `Flipkart_Review_${safeName}_Desktop.jpg`;
+          link.href = canvas.toDataURL('image/jpeg', 0.95);
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+
+          btn.innerHTML = '✓ Downloaded!';
+          btn.style.color = '#10b981';
+          btn.style.borderColor = '#10b981';
+        } catch (canvasErr) {
+          console.error('Canvas error:', canvasErr);
+          showAlert('Error generating screenshot: ' + canvasErr.message);
+          btn.innerHTML = originalText;
+        }
+
+        setTimeout(() => {
+          btn.innerHTML = originalText;
+          btn.style.color = '';
+          btn.style.borderColor = '';
+          btn.disabled = false;
+        }, 2200);
+      });
     });
 
     // Attach 1-click copy handlers for each card
@@ -445,6 +632,16 @@ document.addEventListener('DOMContentLoaded', () => {
           showAlert('Failed to copy link.');
         });
       });
+    });
+  }
+
+  function loadScript(src) {
+    return new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = src;
+      s.onload = resolve;
+      s.onerror = reject;
+      document.head.appendChild(s);
     });
   }
 
@@ -474,6 +671,9 @@ document.addEventListener('DOMContentLoaded', () => {
       location: webLocationInput.value,
       threshold: webThresholdSlider.value,
       scope: webScopeSelect.value,
+      productTitle: currentProductTitle,
+      productImageUrl: currentProductImage,
+      productPrice: currentProductPrice,
       matchedReviews: activeMatchedReviews
     };
     localStorage.setItem('fk_web_search_state', JSON.stringify(state));
@@ -487,6 +687,13 @@ document.addEventListener('DOMContentLoaded', () => {
       if (state.productUrl) webProductUrl.value = state.productUrl;
       if (state.names) webNamesInput.value = state.names;
       if (state.location) webLocationInput.value = state.location;
+      if (state.productTitle) {
+        currentProductTitle = state.productTitle;
+        webProductTitleText.textContent = state.productTitle;
+        webProductBanner.classList.remove('hidden');
+      }
+      if (state.productImageUrl) currentProductImage = state.productImageUrl;
+      if (state.productPrice) currentProductPrice = state.productPrice;
       if (state.threshold) {
         webThresholdSlider.value = state.threshold;
         webThresholdVal.textContent = `${state.threshold}%`;

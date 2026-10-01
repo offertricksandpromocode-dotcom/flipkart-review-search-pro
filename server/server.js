@@ -60,17 +60,7 @@ app.post('/api/search/scrape', async (req, res) => {
     searchScope = 'ALL_SECTIONS'
   } = req.body;
 
-  // 1. Verify License Key
-  if (!licenseKey) {
-    return res.status(401).json({ error: 'Membership License Key is required to search. Contact @mahabirgope7 on Telegram to buy.' });
-  }
-
-  const licCheck = db.verifyLicense({ key: licenseKey });
-  if (!licCheck.isValid) {
-    return res.status(403).json({ error: licCheck.error || 'Invalid or expired License Key.' });
-  }
-
-  // 2. Validate & Normalize ANY Flipkart URL (including short links and text shares)
+  // 1. Validate & Normalize ANY Flipkart URL (100% Free - No License Key Required)
   const norm = await ServerScraper.normalizeUniversalUrl(productUrl);
   if (!norm.isValid) {
     return res.status(400).json({ error: norm.error || 'Invalid Flipkart Product URL.' });
