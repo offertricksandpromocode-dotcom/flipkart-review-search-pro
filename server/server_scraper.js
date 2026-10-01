@@ -1,5 +1,6 @@
 const https = require('https');
 const http = require('http');
+const zlib = require('zlib');
 const NameMatcher = require('../scripts/matcher.js');
 
 class ServerScraper {
@@ -288,10 +289,20 @@ class ServerScraper {
           return resolve(this.fetchHtml(redirectUrl));
         }
 
-        let data = '';
-        res.setEncoding('utf8');
-        res.on('data', chunk => data += chunk);
-        res.on('end', () => resolve(data));
+        let stream = res;
+        const encoding = (res.headers['content-encoding'] || '').toLowerCase();
+        if (encoding === 'gzip') {
+          stream = res.pipe(zlib.createGunzip());
+        } else if (encoding === 'deflate') {
+          stream = res.pipe(zlib.createInflate());
+        } else if (encoding === 'br') {
+          stream = res.pipe(zlib.createBrotliDecompress());
+        }
+
+        const chunks = [];
+        stream.on('data', chunk => chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk)));
+        stream.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')));
+        stream.on('error', () => resolve(Buffer.concat(chunks).toString('utf8')));
       });
 
       req.on('error', reject);
